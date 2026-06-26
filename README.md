@@ -1,4 +1,4 @@
-# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.1
+# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.2
 
 **中文** | [English](./README-en.md)
 
@@ -85,13 +85,14 @@ flowchart TD
 
 ```text
 ./
-├── Skill.md                              # 【核心】总编排器 v2.0，定义流水线、配置参数与扩展规范
+├── Skill.md                              # 【核心】总编排器 v2.2，定义流水线、配置参数与扩展规范
 │
 ├── _agents/                              # 【扩展仓】存放所有子 Agent 定义
 │   ├── knowledge-analyst.md              # 知识分析师
 │   ├── project-expert.md                 # 项目专家
 │   ├── knowledge-educator.md             # 知识教学专家
-│   └── verifier.md                       # 闭环校验器 (v2.0 新增)
+│   ├── verifier.md                       # 闭环校验器 (v2.0 新增)
+│   └── obsidian-syntax-validator.md      # Obsidian 语法校验器 (v2.2 新增)
 │
 ├── .shared/                              # 【缓存层】标准化中间产物（自动生成，请勿手动修改）
 │   ├── knowledge_graph.json              # 知识点全集（step-analyze 产出）
@@ -105,7 +106,8 @@ flowchart TD
         ├── 2-项目集.md                   # 项目专家产出
         ├── 3-知识点项目映射表.md         # 项目专家产出
         ├── 4-领域知识教学指南.md         # 知识教学专家产出
-        └── 6-进度追踪看板.md             # 学习进度追踪（v2.0 新增）
+        ├── 6-进度追踪看板.md             # 学习进度追踪（v2.0 新增）
+        └── 7-Obsidian语法校验报告.md     # Obsidian 语法校验与修正（v2.2 新增）
 ```
 
 ---
@@ -156,6 +158,7 @@ flowchart TD
 | **3-知识点项目映射表.md** | 双向检索表：知识点 ID ↔ 项目 ID ↔ 应用环节 | 随时反查"这个知识点在哪个项目的哪个步骤被用到" |
 | **4-领域知识教学指南.md** | 按"教学单元"组织的讲解内容（价值锚点+精讲+故事+拷问+实战钩子） | 每个单元末尾的"实战钩子"精确指向对应项目步骤，学完即练 |
 | **6-进度追踪看板.md** | 按知识点 ID 罗列的 checkbox 清单 + 聚合进度统计 | 可视化追踪学习进度，随时掌握全局完成度 |
+| **7-Obsidian语法校验报告.md** (v2.2 新增) | 逐文件语法校验结果 + 修正记录 + 内容丰富化建议（标签/链接/Callout） | 确保所有产出物符合 Obsidian 最新语法规范，链接可正确跳转 |
 
 ---
 

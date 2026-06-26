@@ -4,6 +4,37 @@
 
 ---
 
+## v2.2.0 (2026-06-26)
+
+### 全新 Skill：Obsidian 语法校验器
+- **新增**：`_agents/obsidian-syntax-validator.md` — 整合 `obsidian操作文档/` 下全部 15 篇 Obsidian 官方规范的专用语法校验 Skill
+- **包含**：8 大规则组（A-H），覆盖 Wiki 链接、标题格式、YAML Frontmatter、Callout 标注、标签、表格、文本格式化、嵌入/图表等全部语法
+- **包含**：4 阶段校验工作流（逐文件扫描 → 自动修正 → 内容丰富化建议 → 输出校验报告）
+- **包含**：三级问题分级（严重 🔴 / 警告 🟡 / 建议 🟢），严重和警告级别自动修正
+
+### 插件编排器集成
+- **新增**：`Skill.md` Pipeline 新增 `step-syntax-check` 步骤，在全部文档生成后自动执行 Obsidian 语法校验
+- **新增**：第 9 条核心执行规则"Obsidian 语法强制合规"，所有产出物必须在最终交付前通过语法校验
+- **新增**：`7-Obsidian语法校验报告.md` 产出物，包含逐文件校验结果和修正记录
+
+### 内容丰富化（全 Agent 升级）
+- **增强**：`knowledge-analyst.md` — 新增 YAML Frontmatter 生成要求（tags/领域标签）
+- **增强**：`project-expert.md` — 新增 YAML Frontmatter + Callout 标注应用（warning/success/danger/info）+ 标签推荐
+- **增强**：`knowledge-educator.md` — 新增 YAML Frontmatter + Callout 标注应用（tip/note/question/info）+ 标签建议
+- **增强**：`verifier.md` — 新增 Obsidian 语法预校验自检清单 + 内容丰富化要求（Frontmatter/Callout/cssclasses）
+
+### 规则库
+- **新增**：规则 A1-A7 — Wiki 链接完整格式规范（含表格内 pipe 转义）
+- **新增**：规则 B1-B3 — 标题格式规范（纯文本禁止、`#` 后空格）
+- **新增**：规则 C1-C5 — YAML Frontmatter 属性规范
+- **新增**：规则 D1-D3 — Callout 标注规范（13 种类型 + 折叠）
+- **新增**：规则 E1-E4 — 标签规范（嵌套、合法字符）
+- **新增**：规则 F1-F2 — 表格规范（pipe 转义）
+- **新增**：规则 G1-G8 — 文本格式化规范（粗/斜/高亮/删除/代码/注释/转义）
+- **新增**：规则 H1-H10 — 其他高级语法规范（嵌入/Mermaid/数学公式/任务列表等）
+
+---
+
 ## v2.1.0 (2026-06-26)
 
 ### 双向链接格式修复

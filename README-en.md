@@ -1,4 +1,4 @@
-# 🧠 Knowledge Engine Orchestrator v2.1
+# 🧠 Knowledge Engine Orchestrator v2.2
 
 [中文](./README.md) | **English**
 
@@ -85,13 +85,14 @@ flowchart TD
 
 ```text
 ./
-├── Skill.md                              # 【Core】Master orchestrator v2.0 — defines pipeline, config & extension contracts
+├── Skill.md                              # 【Core】Master orchestrator v2.2 — defines pipeline, config & extension contracts
 │
 ├── _agents/                              # 【Extension Hub】Stores all sub-Agent definitions
 │   ├── knowledge-analyst.md
 │   ├── project-expert.md
 │   ├── knowledge-educator.md
-│   └── verifier.md                       # (v2.0 new) Verification Agent
+│   ├── verifier.md                       # (v2.0 new) Verification Agent
+│   └── obsidian-syntax-validator.md      # (v2.2 new) Obsidian Syntax Validator
 │
 ├── .shared/                              # 【Cache Layer】Standardized middleware (auto-generated, DO NOT edit manually)
 │   ├── knowledge_graph.json
@@ -106,6 +107,7 @@ flowchart TD
         ├── 3-Knowledge-Project-Mapping.md
         ├── 4-Domain-Teaching-Guide.md
         └── 6-Progress-Tracker.md         # (v2.0 new)
+        └── 7-Obsidian-Syntax-Report.md   # (v2.2 new) Obsidian syntax validation
 ```
 
 ---
@@ -154,6 +156,7 @@ You can also specify config parameters inline:
 | **3-Knowledge-Project-Mapping.md** | Bidirectional lookup table: Knowledge ID ↔ Project ID ↔ Application Step | Instantly answer: "In which project step is this knowledge point applied?" |
 | **4-Domain-Teaching-Guide.md** | Unit-based teaching content (Value Anchor + Deep Dive + Analogy + Inquiry + Practice Hook) | Each unit ends with a hook that precisely links to project steps — learn then practice |
 | **6-Progress-Tracker.md** | Checkbox tracker per knowledge point ID + aggregate progress stats | Visual progress tracking for self-learners |
+| **7-Obsidian-Syntax-Report.md** (v2.2 new) | Per-file syntax validation results + fixes + enrichment suggestions (tags/links/callouts) | Ensures all deliverables comply with the latest Obsidian syntax — links navigate correctly |
 
 ---
 
