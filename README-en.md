@@ -1,4 +1,4 @@
-# 🧠 Knowledge Engine Orchestrator v2.0
+# 🧠 Knowledge Engine Orchestrator v2.1
 
 [中文](./README.md) | **English**
 
