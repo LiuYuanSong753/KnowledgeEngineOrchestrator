@@ -1,4 +1,4 @@
-# 🧠 Knowledge Engine Orchestrator v2.2
+# 🧠 Knowledge Engine Orchestrator v2.3
 
 [中文](./README.md) | **English**
 
@@ -47,36 +47,34 @@ The diagram below illustrates the **strictly sequential orchestration** of the f
 ```mermaid
 flowchart TD
     A[User inputs domain + config] --> B[🧑 Knowledge Analyst]
-    B -->|JSON| D[.shared/knowledge_graph.json]
+    B -->|JSON| D[domain/.shared/knowledge_graph.json]
     B -->|MD| C[1-Domain-Knowledge-Glossary.md]
     
     C --> E[🧑 Project Expert]
     D --> E
     E -->|Pre-gate: Coverage=100%| E
-    E -->|JSON| H[.shared/project_manifest.json]
+    E -->|JSON| H[domain/.shared/project_manifest.json]
     E -->|MD| F[2-Project-Set.md]
-    E -->|MD| G[3-Knowledge-Project-Mapping.md]
     
     C --> I[🧑 Knowledge Educator]
     F --> I
     H --> I
-    I -->|JSON| J[.shared/teaching_outline.json]
-    I -->|MD| K[4-Domain-Teaching-Guide.md]
+    I -->|JSON| J[domain/.shared/teaching_outline.json]
+    I -->|MD| K[3-Domain-Teaching-Guide.md]
     
     C --> L[✅ Verifier]
     F --> L
-    G --> L
     K --> L
     D --> L
     H --> L
     L -->|MD| M[0-Master-Index.md]
-    L -->|MD| N[6-Progress-Tracker.md]
+    L -->|MD| N[4-Progress-Tracker.md]
 ```
 
 > **Design Principles**:
 > - **Strict Ordering**: The glossary must exist before project design; project IDs must exist before the teaching guide can anchor to them precisely.
 > - **Pre-Validation Gates**: After each step, the orchestrator validates output completeness and coverage before proceeding. Failures halt the pipeline immediately.
-> - **Cache Decoupling**: The `.shared/` directory holds standardized JSON middleware, ensuring stable data transfer between Agents.
+> - **Cache Decoupling**: The `knowledge-bases/[domain]/.shared/` directory holds standardized JSON middleware with per-domain isolation, ensuring multiple knowledge bases can coexist without overwriting each other.
 > - **Human-Machine Separation**: JSON feeds downstream Agents; Markdown serves human reading and Obsidian rendering. Each does its job.
 
 ---
@@ -85,7 +83,7 @@ flowchart TD
 
 ```text
 ./
-├── Skill.md                              # 【Core】Master orchestrator v2.2 — defines pipeline, config & extension contracts
+├── Skill.md                              # 【Core】Master orchestrator v2.3 — defines pipeline, config & extension contracts
 │
 ├── _agents/                              # 【Extension Hub】Stores all sub-Agent definitions
 │   ├── knowledge-analyst.md
@@ -94,20 +92,23 @@ flowchart TD
 │   ├── verifier.md                       # (v2.0 new) Verification Agent
 │   └── obsidian-syntax-validator.md      # (v2.2 new) Obsidian Syntax Validator
 │
-├── .shared/                              # 【Cache Layer】Standardized middleware (auto-generated, DO NOT edit manually)
-│   ├── knowledge_graph.json
-│   ├── project_manifest.json
-│   └── teaching_outline.json             # (v2.0 new)
+├── schemas/                              # 【Spec Layer】JSON Schema definitions
+│   ├── knowledge_graph.schema.json
+│   ├── project_manifest.schema.json
+│   └── teaching_outline.schema.json
 │
-└── knowledge-bases/                     # 【Output Layer】Final user-facing knowledge assets
+└── knowledge-bases/                      # 【Output Layer】Final user-facing knowledge assets
     └── [your-domain-name]/
-        ├── 0-Master-Index.md             # Verification report + knowledge graph + reference index
+        ├── .shared/                      # 【Cache Layer】Per-domain middleware (auto-generated, isolated)
+        │   ├── knowledge_graph.json
+        │   ├── project_manifest.json
+        │   ├── teaching_outline.json
+        │   └── syntax_check_report.md    # Obsidian syntax validation report (internal)
+        ├── 0-Master-Index.md             # Verification report + knowledge graph + mapping table + reference index
         ├── 1-Domain-Knowledge-Glossary.md
         ├── 2-Project-Set.md
-        ├── 3-Knowledge-Project-Mapping.md
-        ├── 4-Domain-Teaching-Guide.md
-        └── 6-Progress-Tracker.md         # (v2.0 new)
-        └── 7-Obsidian-Syntax-Report.md   # (v2.2 new) Obsidian syntax validation
+        ├── 3-Domain-Teaching-Guide.md
+        └── 4-Progress-Tracker.md
 ```
 
 ---
@@ -150,19 +151,17 @@ You can also specify config parameters inline:
 
 | File | Content Summary | Core Value |
 | :--- | :--- | :--- |
-| **0-Master-Index.md** | Verification report + Mermaid knowledge graph + full reference index + learning path | Bird's-eye view; instantly locate where any concept is applied across projects and teaching units |
+| **0-Master-Index.md** | Verification report + Mermaid knowledge graph + knowledge-project mapping table + full reference index + learning path | Bird's-eye view; instantly locate where any concept is applied across projects and teaching units |
 | **1-Domain-Knowledge-Glossary.md** | Structured table: ID, name, difficulty, prerequisites, relationships | The complete domain skeleton — the single source of truth for all downstream outputs |
-| **2-Project-Set.md** | Full-fledged projects following the 5+2 framework (Context/Theory/Steps/Deviation/Acceptance + Mapping) | Each project covers a cluster of knowledge points, with **quantified** acceptance criteria |
-| **3-Knowledge-Project-Mapping.md** | Bidirectional lookup table: Knowledge ID ↔ Project ID ↔ Application Step | Instantly answer: "In which project step is this knowledge point applied?" |
-| **4-Domain-Teaching-Guide.md** | Unit-based teaching content (Value Anchor + Deep Dive + Analogy + Inquiry + Practice Hook) | Each unit ends with a hook that precisely links to project steps — learn then practice |
-| **6-Progress-Tracker.md** | Checkbox tracker per knowledge point ID + aggregate progress stats | Visual progress tracking for self-learners |
-| **7-Obsidian-Syntax-Report.md** (v2.2 new) | Per-file syntax validation results + fixes + enrichment suggestions (tags/links/callouts) | Ensures all deliverables comply with the latest Obsidian syntax — links navigate correctly |
+| **2-Project-Set.md** | Full-fledged projects following the 5+2 framework (Context/Theory/Steps/Deviation/Acceptance) | Each project covers a cluster of knowledge points, with **quantified** acceptance criteria |
+| **3-Domain-Teaching-Guide.md** | Unit-based teaching content (Value Anchor + Deep Dive + Analogy + Inquiry + Practice Hook) | Each unit ends with a hook that precisely links to project steps — learn then practice |
+| **4-Progress-Tracker.md** | Checkbox tracker per knowledge point ID + aggregate progress stats | Visual progress tracking for self-learners |
 
 ---
 
 ## 🔄 Checkpoint Resume (v2.0 New)
 
-The plugin automatically detects cached outputs in `.shared/`:
+The plugin automatically detects cached outputs in `knowledge-bases/[domain]/.shared/`:
 
 - **Auto-skip completed steps**: If `knowledge_graph.json` exists, the analyst step is automatically skipped.
 - **Force full re-run**: Type "force full re-run" in the conversation to ignore all caches.
@@ -172,7 +171,7 @@ An execution plan is displayed before the pipeline starts:
 
 ```
 ═══════════════════════════════════════════
-  📋 Knowledge Engine v2.0 Execution Plan
+  📋 Knowledge Engine v2.3 Execution Plan
 ═══════════════════════════════════════════
   Domain: Python Data Analysis
   Config:
@@ -181,10 +180,11 @@ An execution plan is displayed before the pipeline starts:
     - Max Points: 150
     - Style: academic
   Steps:
-    [1/4] ✅ Done      Knowledge Analyst
-    [2/4] ⏳ Pending   Project Expert
-    [3/4] ⏳ Pending   Knowledge Educator
-    [4/4] ⏳ Pending   Verifier
+    [1/5] ✅ Done      Knowledge Analyst
+    [2/5] ⏳ Pending   Project Expert
+    [3/5] ⏳ Pending   Knowledge Educator
+    [4/5] ⏳ Pending   Verifier
+    [5/5] ⏳ Pending   Obsidian Syntax Check
 ═══════════════════════════════════════════
 ```
 
@@ -204,9 +204,9 @@ Suppose you later want to add an "Interview Question Generator":
   agent: _agents/interview-generator.md
   depends_on: [step-verify]
   input_source:
-    - ".shared/knowledge_graph.json"
-    - ".shared/teaching_outline.json"
-  outputs_markdown: ["knowledge-bases/[domain]/7-Interview-Questions.md"]
+    - "knowledge-bases/[domain]/.shared/knowledge_graph.json"
+    - "knowledge-bases/[domain]/.shared/teaching_outline.json"
+  outputs_markdown: ["knowledge-bases/[domain]/5-Interview-Questions.md"]
   enabled: false
   checkpoint: true
 ```
@@ -217,9 +217,9 @@ No changes to existing files are required — the new Skill seamlessly joins the
 
 | JSON File | Content | Produced By |
 |:---|:---|:---|
-| `.shared/knowledge_graph.json` | All knowledge points | step-analyze |
-| `.shared/project_manifest.json` | Project structure + mappings | step-project |
-| `.shared/teaching_outline.json` | Teaching unit structure | step-teach |
+| `knowledge-bases/[domain]/.shared/knowledge_graph.json` | All knowledge points | step-analyze |
+| `knowledge-bases/[domain]/.shared/project_manifest.json` | Project structure + mappings | step-project |
+| `knowledge-bases/[domain]/.shared/teaching_outline.json` | Teaching unit structure | step-teach |
 
 ---
 
@@ -254,7 +254,7 @@ No changes to existing files are required — the new Skill seamlessly joins the
 
 - **AI‑Generated Content**: All outputs are produced by LLMs. Users are strongly advised to review and adjust the content based on their own domain expertise to ensure accuracy.
 - **ID Immutability (Critical)**: To preserve Obsidian link integrity, once a `Knowledge Point ID` (e.g., `PCE-001`) is generated, **it must never be changed**. If a knowledge point needs revision, mark it as "deprecated" and create a new ID — never rename or delete an existing ID directly.
-- **Read‑Only Cache**: The JSON files under `.shared/` are maintained automatically by the system. **Do not edit them manually**, as this may break downstream Agent execution.
+- **Read‑Only Cache**: The JSON files under `knowledge-bases/[domain]/.shared/` are maintained automatically by the system. **Do not edit them manually**, as this may break downstream Agent execution.
 
 ---
 

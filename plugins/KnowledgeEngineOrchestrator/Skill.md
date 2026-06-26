@@ -1,7 +1,7 @@
 ---
 name: knowledge-engine-orchestrator
 description: 知识体系构建引擎 - 可扩展编排器。负责调度分析师、项目专家、教学专家、校验器，将任意领域拆解为知识点清单、实战项目集与教学指南，并自动生成 Obsidian 双向链接图谱。
-version: 2.2.0
+version: 2.3.0
 
 # ================================================================
 # 用户可配置参数（无需理解 Pipeline 即可修改）
@@ -33,7 +33,7 @@ pipeline:
     agent: _agents/knowledge-analyst.md
     depends_on: []
     input_source: "用户输入的领域名称 + config 参数（granularity, depth_mode, max_knowledge_points）"
-    outputs_shared: [".shared/knowledge_graph.json"]
+    outputs_shared: ["领域知识库/[领域名称]/.shared/knowledge_graph.json"]
     outputs_markdown: ["领域知识库/[领域名称]/1-领域知识点清单.md"]
     enabled: true
     checkpoint: true  # 标记为可断点续跑检查点
@@ -44,11 +44,10 @@ pipeline:
   - id: step-project
     agent: _agents/project-expert.md
     depends_on: [step-analyze]
-    input_source: ".shared/knowledge_graph.json"
-    outputs_shared: [".shared/project_manifest.json"]
+    input_source: "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+    outputs_shared: ["领域知识库/[领域名称]/.shared/project_manifest.json"]
     outputs_markdown:
       - "领域知识库/[领域名称]/2-项目集.md"
-      - "领域知识库/[领域名称]/3-知识点项目映射表.md"
     enabled: true
     checkpoint: true
 
@@ -59,10 +58,10 @@ pipeline:
     agent: _agents/knowledge-educator.md
     depends_on: [step-analyze, step-project]
     input_source:
-      - ".shared/knowledge_graph.json"
-      - ".shared/project_manifest.json"
-    outputs_shared: [".shared/teaching_outline.json"]
-    outputs_markdown: ["领域知识库/[领域名称]/4-领域知识教学指南.md"]
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
+    outputs_shared: ["领域知识库/[领域名称]/.shared/teaching_outline.json"]
+    outputs_markdown: ["领域知识库/[领域名称]/3-领域知识教学指南.md"]
     enabled: true
     checkpoint: true
 
@@ -73,15 +72,14 @@ pipeline:
     agent: _agents/verifier.md
     depends_on: [step-analyze, step-project, step-teach]
     input_source:
-      - ".shared/knowledge_graph.json"
-      - ".shared/project_manifest.json"
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
     input_markdown:
       - "领域知识库/[领域名称]/1-领域知识点清单.md"
-      - "领域知识库/[领域名称]/3-知识点项目映射表.md"
-      - "领域知识库/[领域名称]/4-领域知识教学指南.md"
+      - "领域知识库/[领域名称]/3-领域知识教学指南.md"
     outputs_markdown:
       - "领域知识库/[领域名称]/0-体系总索引.md"
-      - "领域知识库/[领域名称]/6-进度追踪看板.md"
+      - "领域知识库/[领域名称]/4-进度追踪看板.md"
     enabled: true
 
   # --------------------------------------------------------------
@@ -91,8 +89,8 @@ pipeline:
     agent: _agents/assessment-generator.md
     depends_on: [step-analyze, step-project]
     input_source:
-      - ".shared/knowledge_graph.json"
-      - ".shared/project_manifest.json"
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
     outputs_markdown: ["领域知识库/[领域名称]/5-自测题库.md"]
     enabled: false
 
@@ -106,15 +104,14 @@ pipeline:
       - "领域知识库/[领域名称]/0-体系总索引.md"
       - "领域知识库/[领域名称]/1-领域知识点清单.md"
       - "领域知识库/[领域名称]/2-项目集.md"
-      - "领域知识库/[领域名称]/3-知识点项目映射表.md"
-      - "领域知识库/[领域名称]/4-领域知识教学指南.md"
-      - "领域知识库/[领域名称]/6-进度追踪看板.md"
-    outputs_markdown: ["领域知识库/[领域名称]/7-Obsidian语法校验报告.md"]
+      - "领域知识库/[领域名称]/3-领域知识教学指南.md"
+      - "领域知识库/[领域名称]/4-进度追踪看板.md"
+    outputs_markdown: ["领域知识库/[领域名称]/.shared/syntax_check_report.md"]
     enabled: true
     checkpoint: false  # 每次执行均需重新校验
 ---
 
-# 知识体系构建引擎（编排器）v2.0
+# 知识体系构建引擎（编排器）v2.3
 
 ## 角色定义
 你并非一个独立的业务专家，而是**总调度编排器（Orchestrator）**。你的核心职责是解析 `pipeline` 与 `config` 配置，严格按照依赖顺序调用子 Agent，在每一步之间执行前置校验，并确保标准化数据（JSON）与可视化文档（Markdown）的精准落盘。
@@ -123,7 +120,7 @@ pipeline:
 1. **顺序强制**：必须按照 `pipeline` 列表中的 `id` 顺序串行执行，禁止跳步或并行（除非依赖关系明确允许）。
 2. **变量替换**：所有输出路径中的 `[领域名称]` 必须替换为用户本次输入的**实际领域名称**（例如 `Python数据分析`）。
 3. **ID 永生性原则（防链接断裂）**：`知识图谱` 中的 `知识点ID` 一旦生成，终身不得修改。所有 Obsidian 双向链接必须锚定该 ID（格式：`[[1-领域知识点清单#PCE-001]]`），严禁使用自然语言标题作为锚点。
-4. **只读上游**：子 Agent 只能读取 `.shared/` 下的 JSON 文件，严禁修改。若需调整，由编排器在下次全量运行时统一覆盖。
+4. **只读上游**：子 Agent 只能读取 `领域知识库/[领域名称]/.shared/` 下的 JSON 文件，严禁修改。若需调整，由编排器在下次全量运行时统一覆盖。
 5. **参数透传**：`config` 中的用户配置参数（`granularity`、`depth_mode`、`max_knowledge_points`、`style_profile`）必须在调用每个 Agent 时一并传递，确保各 Agent 的行为与用户预期一致。
 6. **前置校验门**：每个步骤完成后，编排器必须先校验输出文件的完整性与格式合规性，通过后方可进入下一步骤。校验失败立即终止并报告具体原因。
 7. **标题纯文本规约（v2.1 关键新增）**：所有 Agent 产出的 Markdown 文档中，`##` / `###` 标题**必须为纯文本**，严禁在标题内嵌入任何 `[[ ]]` wikilink 标记。标题中的 wikilink 会导致 Obsidian 锚点不可预测，破坏跨文档双链跳转功能。
@@ -143,14 +140,13 @@ pipeline:
    - `style_profile`：风格预设
    - `output_language`：输出语言
    - `enable_tracker`：是否生成进度追踪
-3. 检查目录 `领域知识库/[领域名称]/` 是否存在；若不存在则自动创建。
-4. 检查目录 `.shared/` 是否存在；若不存在则自动创建。
-5. **断点检测**：扫描 `.shared/` 目录，识别已完成的步骤（通过检查对应 JSON 文件是否存在），确定本次执行的起点。
+3. 检查目录 `领域知识库/[领域名称]/` 是否存在；若不存在则自动创建。同时在此目录下创建 `.shared/` 子目录（若不存在）。
+4. **断点检测**：扫描 `领域知识库/[领域名称]/.shared/` 目录，识别已完成的步骤（通过检查对应 JSON 文件是否存在），确定本次执行的起点。
 6. **进度报告**：向用户输出执行计划摘要：
 
 ```
 ═══════════════════════════════════════════
-  📋 知识引擎 v2.0 执行计划
+  📋 知识引擎 v2.3 执行计划
 ═══════════════════════════════════════════
   领域名称：{领域名称}
   配置参数：
@@ -159,10 +155,11 @@ pipeline:
     - 知识点上限：{max_knowledge_points}
     - 风格预设：{style_profile}
   执行步骤：
-    [1/4] ✅ 已完成 / ⏳ 待执行  知识分析师
-    [2/4] ✅ 已完成 / ⏳ 待执行  项目专家
-    [3/4] ✅ 已完成 / ⏳ 待执行  知识教学专家
-    [4/4] ✅ 已完成 / ⏳ 待执行  闭环校验器
+    [1/5] ✅ 已完成 / ⏳ 待执行  知识分析师
+    [2/5] ✅ 已完成 / ⏳ 待执行  项目专家
+    [3/5] ✅ 已完成 / ⏳ 待执行  知识教学专家
+    [4/5] ✅ 已完成 / ⏳ 待执行  闭环校验器
+    [5/5] ✅ 已完成 / ⏳ 待执行  Obsidian 语法校验
 ═══════════════════════════════════════════
 ```
 
@@ -173,12 +170,12 @@ pipeline:
 #### 🔹 阶段 1：执行知识分析师（step-analyze）
 
 **前置检查**：
-- 若 `.shared/knowledge_graph.json` 已存在 → 向用户确认："检测到已有的知识图谱缓存，是否复用？(复用/重新生成)"。若用户选择复用，跳过本阶段直接进入阶段 2。
+- 若 `领域知识库/[领域名称]/.shared/knowledge_graph.json` 已存在 → 向用户确认："检测到已有的知识图谱缓存，是否复用？(复用/重新生成)"。若用户选择复用，跳过本阶段直接进入阶段 2。
 - 若不存在 → 正常执行。
 
 **进度报告**：
 ```
-⏳ [1/4] 正在执行知识分析师 — 拆解领域「{领域名称}」的知识体系...
+⏳ [1/5] 正在执行知识分析师 — 拆解领域「{领域名称}」的知识体系...
 ```
 
 **动作**：
@@ -189,15 +186,15 @@ pipeline:
 - **约束**：必须完整输出该领域从入门到高级的全部核心知识点。
 
 **后置校验门（必须全部通过）**：
-1. ✅ `.shared/knowledge_graph.json` 文件已生成且非空。
+1. ✅ `领域知识库/[领域名称]/.shared/knowledge_graph.json` 文件已生成且非空。
 2. ✅ JSON 格式有效（可解析，包含 `knowledge_points` 数组字段）。
-3. ✅ `知识知识库/[领域名称]/1-领域知识点清单.md` 文件已生成且非空。
+3. ✅ `领域知识库/[领域名称]/1-领域知识点清单.md` 文件已生成且非空。
 4. ✅ 知识点总数在 `max_knowledge_points` 范围内（若配置了上限）。
 5. ❌ 任一校验失败 → **强制终止**，输出具体错误原因。
 
 **进度报告**：
 ```
-✅ [1/4] 知识分析师 完成 — 共拆解 N 个知识点（入门级 X / 进阶级 Y / 高级 Z）
+✅ [1/5] 知识分析师 完成 — 共拆解 N 个知识点（入门级 X / 进阶级 Y / 高级 Z）
 ```
 
 ---
@@ -205,29 +202,28 @@ pipeline:
 #### 🔹 阶段 2：执行项目专家（step-project）
 
 **前置检查**：
-- 若 `.shared/project_manifest.json` 已存在且 `.shared/knowledge_graph.json` 未更新 → 向用户确认是否复用。
-- 若 `.shared/knowledge_graph.json` 不存在 → **强制终止**并报错："前置产物 knowledge_graph.json 缺失"。
+- 若 `领域知识库/[领域名称]/.shared/project_manifest.json` 已存在且 `领域知识库/[领域名称]/.shared/knowledge_graph.json` 未更新 → 向用户确认是否复用。
+- 若 `领域知识库/[领域名称]/.shared/knowledge_graph.json` 不存在 → **强制终止**并报错："前置产物 knowledge_graph.json 缺失"。
 
 **进度报告**：
 ```
-⏳ [2/4] 正在执行项目专家 — 为 N 个知识点设计实战项目...
+⏳ [2/5] 正在执行项目专家 — 为 N 个知识点设计实战项目...
 ```
 
 **动作**：
 - 读取 `_agents/project-expert.md` 的角色定义。
-- **输入**：读取 `.shared/knowledge_graph.json` 作为唯一数据源 + `style_profile` 参数（影响项目场景选择）。
+- **输入**：读取 `领域知识库/[领域名称]/.shared/knowledge_graph.json` 作为唯一数据源 + `style_profile` 参数（影响项目场景选择）。
 - **约束**：必须覆盖 JSON 中 100% 的知识点。若存在独立微细知识点，采用"兜底挂载"机制嵌入具体项目子步骤。
 
 **后置校验门（必须全部通过）**：
-1. ✅ `.shared/project_manifest.json` 文件已生成且格式有效。
+1. ✅ `领域知识库/[领域名称]/.shared/project_manifest.json` 文件已生成且格式有效。
 2. ✅ `领域知识库/[领域名称]/2-项目集.md` 已生成。
-3. ✅ `领域知识库/[领域名称]/3-知识点项目映射表.md` 已生成。
-4. ✅ **覆盖率校验**：从 `.shared/knowledge_graph.json` 提取知识点 ID 集 S，从 `project_manifest.json` 提取映射知识点 ID 集 M。若 |M ∩ S| / |S| < 100%，**强制终止**并列出缺失的知识点 ID。
-5. ❌ 任一校验失败 → **强制终止**，禁止进入阶段 3。
+3. ✅ **覆盖率校验**：从 `领域知识库/[领域名称]/.shared/knowledge_graph.json` 提取知识点 ID 集 S，从 `project_manifest.json` 提取映射知识点 ID 集 M。若 |M ∩ S| / |S| < 100%，**强制终止**并列出缺失的知识点 ID。
+4. ❌ 任一校验失败 → **强制终止**，禁止进入阶段 3。
 
 **进度报告**：
 ```
-✅ [2/4] 项目专家 完成 — 共设计 M 个项目，知识点覆盖率 100%
+✅ [2/5] 项目专家 完成 — 共设计 M 个项目，知识点覆盖率 100%
 ```
 
 ---
@@ -235,30 +231,30 @@ pipeline:
 #### 🔹 阶段 3：执行知识教学专家（step-teach）
 
 **前置检查**：
-- 确认 `.shared/knowledge_graph.json` 和 `.shared/project_manifest.json` 均存在且有效。
+- 确认 `领域知识库/[领域名称]/.shared/knowledge_graph.json` 和 `领域知识库/[领域名称]/.shared/project_manifest.json` 均存在且有效。
 
 **进度报告**：
 ```
-⏳ [3/4] 正在执行知识教学专家 — 将知识点打包为教学单元...
+⏳ [3/5] 正在执行知识教学专家 — 将知识点打包为教学单元...
 ```
 
 **动作**：
 - 读取 `_agents/knowledge-educator.md` 的角色定义。
-- **输入**：同时读取 `.shared/knowledge_graph.json` 和 `.shared/project_manifest.json` + `style_profile` 参数（影响教学风格）。
+- **输入**：同时读取 `领域知识库/[领域名称]/.shared/knowledge_graph.json` 和 `领域知识库/[领域名称]/.shared/project_manifest.json` + `style_profile` 参数（影响教学风格）。
 - **约束**：必须基于项目清单中的 **精确项目 ID** 填写"实战预埋钩子"（格式示例：`[[2-项目集.md#Proj-001|步骤2.3]]`），严禁模糊推断。
 
 **产出落盘**：
-1. **机器阅读**：将教学单元结构输出为 `.shared/teaching_outline.json`（包含单元 ID、涵盖知识点、关联项目 ID 等结构化数据，供扩展 Skill 消费）。
-2. **人类阅读**：将单元化教学指南写入 `领域知识库/[领域名称]/4-领域知识教学指南.md`。
+1. **机器阅读**：将教学单元结构输出为 `领域知识库/[领域名称]/.shared/teaching_outline.json`（包含单元 ID、涵盖知识点、关联项目 ID 等结构化数据，供扩展 Skill 消费）。
+2. **人类阅读**：将单元化教学指南写入 `领域知识库/[领域名称]/3-领域知识教学指南.md`。
 
 **后置校验门（必须全部通过）**：
-1. ✅ `领域知识库/[领域名称]/4-领域知识教学指南.md` 已生成且非空。
-2. ✅ `.shared/teaching_outline.json` 已生成且格式有效。
+1. ✅ `领域知识库/[领域名称]/3-领域知识教学指南.md` 已生成且非空。
+2. ✅ `领域知识库/[领域名称]/.shared/teaching_outline.json` 已生成且格式有效。
 3. ❌ 任一校验失败 → **强制终止**。
 
 **进度报告**：
 ```
-✅ [3/4] 知识教学专家 完成 — 共生成 K 个教学单元
+✅ [3/5] 知识教学专家 完成 — 共生成 K 个教学单元
 ```
 
 ---
@@ -270,15 +266,15 @@ pipeline:
 
 **进度报告**：
 ```
-⏳ [4/4] 正在执行闭环校验器 — 校验覆盖率、双链有效性与依赖闭环...
+⏳ [4/5] 正在执行闭环校验器 — 校验覆盖率、双链有效性与依赖闭环...
 ```
 
 **动作**：
 - 读取 `_agents/verifier.md` 的角色定义。
-- **输入**：`.shared/knowledge_graph.json` + `.shared/project_manifest.json` + 全部上游 Markdown 文件。
+- **输入**：`领域知识库/[领域名称]/.shared/knowledge_graph.json` + `领域知识库/[领域名称]/.shared/project_manifest.json` + 全部上游 Markdown 文件。
 - **产出落盘**：
-  1. `领域知识库/[领域名称]/0-体系总索引.md`（含校验报告摘要、Mermaid 知识图谱、全量引用索引、学习路径建议）。
-  2. 若 `config.enable_tracker === true`，同步生成 `领域知识库/[领域名称]/6-进度追踪看板.md`。
+  1. `领域知识库/[领域名称]/0-体系总索引.md`（含校验报告摘要、Mermaid 知识图谱、知识点项目映射表、全量引用索引、学习路径建议）。
+  2. 若 `config.enable_tracker === true`，同步生成 `领域知识库/[领域名称]/4-进度追踪看板.md`。
 
 **后置校验门**：
 1. ✅ 校验报告中"知识点覆盖率"为 100%。
@@ -287,18 +283,17 @@ pipeline:
 
 **进度报告**：
 ```
-✅ [4/4] 闭环校验器 完成 — 覆盖率 100%，死链 0 条，依赖链正常
+✅ [4/5] 闭环校验器 完成 — 覆盖率 100%，死链 0 条，依赖链正常
 
 ═══════════════════════════════════════════
   🎉 知识引擎流水线执行完毕！
   产出目录：领域知识库/{领域名称}/
   
-  📄 0-体系总索引.md          ← 校验报告 + 知识图谱 + 引用索引
+  📄 0-体系总索引.md          ← 校验报告 + 知识图谱 + 映射表 + 引用索引
   📄 1-领域知识点清单.md      ← 知识分析师产出
   📄 2-项目集.md              ← 项目专家产出
-  📄 3-知识点项目映射表.md    ← 项目专家产出
-  📄 4-领域知识教学指南.md    ← 知识教学专家产出
-  📄 6-进度追踪看板.md        ← 学习进度追踪
+  📄 3-领域知识教学指南.md    ← 知识教学专家产出
+  📄 4-进度追踪看板.md        ← 学习进度追踪
 ═══════════════════════════════════════════
 ```
 
@@ -321,7 +316,7 @@ pipeline:
   - 🔴 严重问题 → 自动修正
   - 🟡 警告问题 → 自动修正
   - 🟢 增强建议 → 记录到报告
-- **产出落盘**：`领域知识库/[领域名称]/7-Obsidian语法校验报告.md`（包含逐文件校验结果和内容丰富化建议）。
+- **产出落盘**：`领域知识库/[领域名称]/.shared/syntax_check_report.md`（内部工作文件，包含逐文件校验结果和内容丰富化建议）。
 
 **后置校验门**：
 1. ✅ 所有 🔴 严重问题已被修正。
@@ -335,13 +330,11 @@ pipeline:
   🎉 知识引擎流水线全部执行完毕！
   产出目录：领域知识库/{领域名称}/
   
-  📄 0-体系总索引.md            ← 校验报告 + 知识图谱 + 引用索引
+  📄 0-体系总索引.md            ← 校验报告 + 知识图谱 + 映射表 + 引用索引
   📄 1-领域知识点清单.md        ← 知识分析师产出
   📄 2-项目集.md                ← 项目专家产出
-  📄 3-知识点项目映射表.md      ← 项目专家产出
-  📄 4-领域知识教学指南.md      ← 知识教学专家产出
-  📄 6-进度追踪看板.md          ← 学习进度追踪
-  📄 7-Obsidian语法校验报告.md  ← v2.2 语法校验与修正
+  📄 3-领域知识教学指南.md      ← 知识教学专家产出
+  📄 4-进度追踪看板.md          ← 学习进度追踪
 ═══════════════════════════════════════════
 ```
 
@@ -380,30 +373,30 @@ pipeline:
      agent: _agents/your-agent.md
      depends_on: [step-verify]        # 声明依赖的前置步骤 ID
      input_source:                     # 声明需要读取的 JSON 中间件
-       - ".shared/knowledge_graph.json"
-       - ".shared/teaching_outline.json"
-     outputs_shared: [".shared/your_output.json"]
+       - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+       - "领域知识库/[领域名称]/.shared/teaching_outline.json"
+     outputs_shared: ["领域知识库/[领域名称]/.shared/your_output.json"]
      outputs_markdown: ["领域知识库/[领域名称]/N-你的产出.md"]
      enabled: false                    # 默认关闭
      checkpoint: true
    ```
 3. **遵循契约**：
    - 必须使用 ID 作为链接锚点（知识点 ID、项目 ID、单元 ID）。
-   - 输入数据只能从 `.shared/` 读取，禁止修改上游 JSON。
+   - 输入数据只能从 `领域知识库/[领域名称]/.shared/` 读取，禁止修改上游 JSON。
    - 输出 Markdown 必须包含与其他产出物的 Obsidian 双链互跳。
 
 ### 可用中间件清单（供扩展 Skill 消费）
 
 | JSON 文件 | 内容 | 生产者 |
 |:---|:---|:---|
-| `.shared/knowledge_graph.json` | 知识点全集（ID、名称、难度、依赖、关联） | step-analyze |
-| `.shared/project_manifest.json` | 项目结构、ID、知识点映射关系 | step-project |
-| `.shared/teaching_outline.json` | 教学单元结构（单元 ID、涵盖知识点、关联项目 ID） | step-teach |
+| `领域知识库/[领域名称]/.shared/knowledge_graph.json` | 知识点全集（ID、名称、难度、依赖、关联） | step-analyze |
+| `领域知识库/[领域名称]/.shared/project_manifest.json` | 项目结构、ID、知识点映射关系 | step-project |
+| `领域知识库/[领域名称]/.shared/teaching_outline.json` | 教学单元结构（单元 ID、涵盖知识点、关联项目 ID） | step-teach |
 
 ---
 
 ## ⚠️ 质量红线（硬性检查，v2.0 增强版）
-- 若 `step-analyze` 未产出 `.shared/knowledge_graph.json`，则后续步骤**强制终止**并报错。
+- 若 `step-analyze` 未产出 `领域知识库/[领域名称]/.shared/knowledge_graph.json`，则后续步骤**强制终止**并报错。
 - 若 `step-project` 中知识点覆盖率 < 100%，**强制终止**并列出缺失的知识点 ID，禁止进入 `step-teach` 阶段。
 - 若任意步骤的后置校验门未通过，**强制终止**并输出校验失败详情。
 - **严禁**在最终 Markdown 文件中出现 `[待补充]`、`TODO`、`待确认` 等占位符，所有内容必须基于实际逻辑生成。

@@ -4,6 +4,30 @@
 
 ---
 
+## v2.3.0 (2026-06-26)
+
+### 多领域独立存储机制
+- **修复**：`.shared/` 目录从全局扁平结构迁移为 `领域知识库/[领域名称]/.shared/`，每个领域的中间件 JSON 文件独立存储，彻底解决多领域知识库连续产出时 `.shared/` 被覆盖导致旧知识库无法更新的问题
+
+### 知识库文档结构优化与精简
+- **文档合并**：`3-知识点项目映射表.md` 的全部内容合并至 `0-体系总索引.md` 中的"知识点项目映射表"章节，由闭环校验器基于 `project_manifest.json` 统一生成
+- **文档移除**：`7-Obsidian语法校验报告.md` 改为内部工作文件（`.shared/syntax_check_report.md`），不再出现在用户交付物列表中
+- **文档重编号**：`4-领域知识教学指南.md` → `3-领域知识教学指南.md`，`6-进度追踪看板.md` → `4-进度追踪看板.md`
+- **优化后交付物列表**：0-体系总索引 / 1-领域知识点清单 / 2-项目集 / 3-领域知识教学指南 / 4-进度追踪看板
+
+### 全路径引用更新
+- **更新**：`Skill.md` — 所有 `.shared/` 路径迁移至 `领域知识库/[领域名称]/.shared/`，Pipeline 步骤、前置校验门、断点续跑、扩展规范、质量红线全部同步
+- **更新**：`_agents/knowledge-analyst.md` — `.shared/` 路径迁移
+- **更新**：`_agents/project-expert.md` — 移除单独映射表输出职责，`.shared/` 路径迁移
+- **更新**：`_agents/knowledge-educator.md` — `.shared/` 路径迁移，文档引用重编号（4→3）
+- **更新**：`_agents/verifier.md` — 新增"知识点项目映射表"章节，校验源从扫描映射表文件改为直接解析 `project_manifest.json`，文档引用重编号
+- **更新**：`_agents/obsidian-syntax-validator.md` — 校验报告输出路径改为内部文件
+
+### 版本号同步
+- `marketplace.json`、`Skill.md`、`README.md`、`README-en.md` 版本号统一更新为 2.3.0
+
+---
+
 ## v2.2.0 (2026-06-26)
 
 ### 全新 Skill：Obsidian 语法校验器

@@ -1,4 +1,4 @@
-# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.2
+# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.3
 
 **中文** | [English](./README-en.md)
 
@@ -47,36 +47,34 @@
 ```mermaid
 flowchart TD
     A[用户输入领域名称 + 配置参数] --> B[🧑‍🏫 知识分析师]
-    B -->|产出 JSON| D[.shared/knowledge_graph.json]
+    B -->|产出 JSON| D[领域知识库/领域/.shared/knowledge_graph.json]
     B -->|产出 MD| C[1-领域知识点清单.md]
     
     C --> E[🧑‍💻 项目专家]
     D --> E
     E -->|前置校验门: 覆盖率=100%| E
-    E -->|产出 JSON| H[.shared/project_manifest.json]
+    E -->|产出 JSON| H[领域知识库/领域/.shared/project_manifest.json]
     E -->|产出 MD| F[2-项目集.md]
-    E -->|产出 MD| G[3-知识点项目映射表.md]
     
     C --> I[🧑‍🎓 知识教学专家]
     F --> I
     H --> I
-    I -->|产出 JSON| J[.shared/teaching_outline.json]
-    I -->|产出 MD| K[4-领域知识教学指南.md]
+    I -->|产出 JSON| J[领域知识库/领域/.shared/teaching_outline.json]
+    I -->|产出 MD| K[3-领域知识教学指南.md]
     
     C --> L[✅ 闭环校验器]
     F --> L
-    G --> L
     K --> L
     D --> L
     H --> L
     L -->|产出 MD| M[0-体系总索引.md]
-    L -->|产出 MD| N[6-进度追踪看板.md]
+    L -->|产出 MD| N[4-进度追踪看板.md]
 ```
 
 > **设计要点**：
 > - **顺序强制**：必须先有知识点清单，才能设计项目；必须先有项目 ID，才能让教学指南精确锚定。
 > - **前置校验门**：每个步骤完成后，编排器自动校验输出文件完整性与覆盖率，不合格则强制终止。
-> - **缓存解耦**：`.shared/` 目录下的 JSON 文件作为标准化中间件，确保各 Agent 之间的数据传递稳定可靠。
+> - **缓存解耦**：`领域知识库/[领域名称]/.shared/` 目录下的 JSON 文件作为标准化中间件，各领域独立存储互不覆盖，确保多领域知识库可共存并行维护。
 > - **人机分离**：JSON 供机器读取（下游 Agent 依赖），Markdown 供人类阅读和 Obsidian 渲染，各司其职。
 
 ---
@@ -85,7 +83,7 @@ flowchart TD
 
 ```text
 ./
-├── Skill.md                              # 【核心】总编排器 v2.2，定义流水线、配置参数与扩展规范
+├── Skill.md                              # 【核心】总编排器 v2.3，定义流水线、配置参数与扩展规范
 │
 ├── _agents/                              # 【扩展仓】存放所有子 Agent 定义
 │   ├── knowledge-analyst.md              # 知识分析师
@@ -94,20 +92,23 @@ flowchart TD
 │   ├── verifier.md                       # 闭环校验器 (v2.0 新增)
 │   └── obsidian-syntax-validator.md      # Obsidian 语法校验器 (v2.2 新增)
 │
-├── .shared/                              # 【缓存层】标准化中间产物（自动生成，请勿手动修改）
-│   ├── knowledge_graph.json              # 知识点全集（step-analyze 产出）
-│   ├── project_manifest.json             # 项目与映射关系（step-project 产出）
-│   └── teaching_outline.json             # 教学单元结构（step-teach 产出，v2.0 新增）
+├── schemas/                              # 【规范层】JSON Schema 定义
+│   ├── knowledge_graph.schema.json
+│   ├── project_manifest.schema.json
+│   └── teaching_outline.schema.json
 │
 └── 领域知识库/                           # 【产出层】用户可见的最终知识资产
     └── [你输入的领域名称]/
-        ├── 0-体系总索引.md               # 闭环校验：覆盖率报告 + 知识图谱 + 引用索引
+        ├── .shared/                      # 【缓存层】该领域的标准化中间件（自动生成，独立存储）
+        │   ├── knowledge_graph.json
+        │   ├── project_manifest.json
+        │   ├── teaching_outline.json
+        │   └── syntax_check_report.md    # Obsidian 语法校验报告（内部文件）
+        ├── 0-体系总索引.md               # 校验报告 + 知识图谱 + 映射表 + 引用索引
         ├── 1-领域知识点清单.md           # 知识分析师产出
         ├── 2-项目集.md                   # 项目专家产出
-        ├── 3-知识点项目映射表.md         # 项目专家产出
-        ├── 4-领域知识教学指南.md         # 知识教学专家产出
-        ├── 6-进度追踪看板.md             # 学习进度追踪（v2.0 新增）
-        └── 7-Obsidian语法校验报告.md     # Obsidian 语法校验与修正（v2.2 新增）
+        ├── 3-领域知识教学指南.md         # 知识教学专家产出
+        └── 4-进度追踪看板.md             # 学习进度追踪
 ```
 
 ---
@@ -152,13 +153,11 @@ flowchart TD
 
 | 文件 | 内容概要 | 核心价值 |
 | :--- | :--- | :--- |
-| **0-体系总索引.md** | 校验报告摘要 + Mermaid 知识图谱 + 全量引用索引 + 学习路径建议 | 全局鸟瞰，快速定位任意知识点的关联项目与教学章节 |
+| **0-体系总索引.md** | 校验报告摘要 + Mermaid 知识图谱 + 知识点项目映射表 + 全量引用索引 + 学习路径建议 | 全局鸟瞰，快速定位任意知识点的关联项目与教学章节，映射表支持双向检索 |
 | **1-领域知识点清单.md** | 结构化表格：ID、名称、难度、前置依赖、关联关系 | 完整的领域知识骨架，是一切后续产出的唯一事实来源 |
-| **2-项目集.md** | 按 5+2 框架（背景/思想/步骤/偏差/验收 + 映射表）设计的完整项目 | 每个项目都覆盖一组知识点，且验收标准附带**量化指标示例** |
-| **3-知识点项目映射表.md** | 双向检索表：知识点 ID ↔ 项目 ID ↔ 应用环节 | 随时反查"这个知识点在哪个项目的哪个步骤被用到" |
-| **4-领域知识教学指南.md** | 按"教学单元"组织的讲解内容（价值锚点+精讲+故事+拷问+实战钩子） | 每个单元末尾的"实战钩子"精确指向对应项目步骤，学完即练 |
-| **6-进度追踪看板.md** | 按知识点 ID 罗列的 checkbox 清单 + 聚合进度统计 | 可视化追踪学习进度，随时掌握全局完成度 |
-| **7-Obsidian语法校验报告.md** (v2.2 新增) | 逐文件语法校验结果 + 修正记录 + 内容丰富化建议（标签/链接/Callout） | 确保所有产出物符合 Obsidian 最新语法规范，链接可正确跳转 |
+| **2-项目集.md** | 按 5+2 框架（背景/思想/步骤/偏差/验收）设计的完整项目 | 每个项目都覆盖一组知识点，且验收标准附带**量化指标示例** |
+| **3-领域知识教学指南.md** | 按"教学单元"组织的讲解内容（价值锚点+精讲+故事+拷问+实战钩子） | 每个单元末尾的"实战钩子"精确指向对应项目步骤，学完即练 |
+| **4-进度追踪看板.md** | 按知识点 ID 罗列的 checkbox 清单 + 聚合进度统计 | 可视化追踪学习进度，随时掌握全局完成度 |
 
 ---
 
@@ -167,7 +166,7 @@ flowchart TD
 打开任意一份产出文档，你会看到类似以下格式的内链：
 
 ```markdown
-# 4-领域知识教学指南.md
+# 3-领域知识教学指南.md
 
 ## 教学单元 EDU-003：Pandas 数据清洗
 
@@ -182,7 +181,7 @@ flowchart TD
 
 ## 🔄 断点续跑（v2.0 新特性）
 
-插件会自动检测 `.shared/` 目录中的已有缓存：
+插件会自动检测 `领域知识库/[领域名称]/.shared/` 目录中的已有缓存：
 
 - **自动跳过已完成步骤**：如果 `knowledge_graph.json` 已存在，知识分析师步骤自动跳过。
 - **强制全量重跑**：在对话中输入"强制全量重跑"即可忽略所有缓存从头执行。
@@ -192,7 +191,7 @@ flowchart TD
 
 ```
 ═══════════════════════════════════════════
-  📋 知识引擎 v2.0 执行计划
+  📋 知识引擎 v2.3 执行计划
 ═══════════════════════════════════════════
   领域名称：Python数据分析
   配置参数：
@@ -201,10 +200,11 @@ flowchart TD
     - 知识点上限：150
     - 风格预设：academic
   执行步骤：
-    [1/4] ✅ 已完成  知识分析师
-    [2/4] ⏳ 待执行  项目专家
-    [3/4] ⏳ 待执行  知识教学专家
-    [4/4] ⏳ 待执行  闭环校验器
+    [1/5] ✅ 已完成  知识分析师
+    [2/5] ⏳ 待执行  项目专家
+    [3/5] ⏳ 待执行  知识教学专家
+    [4/5] ⏳ 待执行  闭环校验器
+    [5/5] ⏳ 待执行  Obsidian 语法校验
 ═══════════════════════════════════════════
 ```
 
@@ -224,9 +224,9 @@ flowchart TD
   agent: _agents/interview-generator.md
   depends_on: [step-verify]
   input_source:
-    - ".shared/knowledge_graph.json"
-    - ".shared/teaching_outline.json"
-  outputs_markdown: ["领域知识库/[领域名称]/7-面试题库.md"]
+    - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+    - "领域知识库/[领域名称]/.shared/teaching_outline.json"
+  outputs_markdown: ["领域知识库/[领域名称]/5-面试题库.md"]
   enabled: false
   checkpoint: true
 ```
@@ -237,9 +237,9 @@ flowchart TD
 
 | JSON 文件 | 内容 | 生产者 |
 |:---|:---|:---|
-| `.shared/knowledge_graph.json` | 知识点全集 | step-analyze |
-| `.shared/project_manifest.json` | 项目结构 + 映射 | step-project |
-| `.shared/teaching_outline.json` | 教学单元结构 | step-teach |
+| `领域知识库/[领域名称]/.shared/knowledge_graph.json` | 知识点全集 | step-analyze |
+| `领域知识库/[领域名称]/.shared/project_manifest.json` | 项目结构 + 映射 | step-project |
+| `领域知识库/[领域名称]/.shared/teaching_outline.json` | 教学单元结构 | step-teach |
 
 ---
 
@@ -276,7 +276,7 @@ flowchart TD
 
 - **AI 生成属性**：所有产出物均由 LLM 自动生成，请使用者务必根据自身专业背景进行最终审核与调整，确保内容准确无误。
 - **ID 不可变性（极其重要）**：为保障 Obsidian 双链的永久稳定，`知识点ID`（如 `PCE-001`）一旦生成，**终身不得修改**。若某个知识点需要调整，请采用"标记为废弃 + 新增 ID"的方式迭代，切勿直接重命名或删除 ID。
-- **只读缓存**：`.shared/` 目录下的 JSON 文件由系统自动维护，**请勿手动修改**，否则可能导致下游 Agent 读取异常。
+- **只读缓存**：`领域知识库/[领域名称]/.shared/` 目录下的 JSON 文件由系统自动维护，**请勿手动修改**，否则可能导致下游 Agent 读取异常。
 
 ---
 
