@@ -255,12 +255,7 @@ No changes to existing files are required — the new Skill seamlessly joins the
 
 ---
 
-## 📜 Changelog
-
-| Version | Date | Updates |
-| :--- | :--- | :--- |
-| **v2.0.0** | 2026-06-26 | **Major update**: Added Verifier Agent (replaces unimplemented system-calculation); Added teaching_outline.json middleware; Added config parameterization (granularity/depth_mode/style_profile/max_knowledge_points); Added checkpoint resume & incremental update; Added pre-validation gates (coverage/format/completeness); Added progress feedback & execution plan preview; Fixed Agent input declaration format mismatches; Added troubleshooting guide & token estimation table |
-| v1.0.0 | 2026-06-25 | Initial release: Knowledge Analyst, Project Expert, Knowledge Educator with Obsidian bi‑linking and hot‑swap extensibility |
+> See [CHANGELOG.md](./CHANGELOG.md) for the complete version history.
 
 ---
 

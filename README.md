@@ -277,12 +277,7 @@ flowchart TD
 
 ---
 
-## 📜 版本记录
-
-| 版本 | 日期 | 更新内容 |
-| :--- | :--- | :--- |
-| **v2.0.0** | 2026-06-26 | **重大更新**：新增闭环校验器 Agent（替代未实现的 system-calculation）；新增 teaching_outline.json 中间件产出；新增 config 参数化配置（granularity/depth_mode/style_profile/max_knowledge_points）；新增断点续跑与增量更新机制；新增前置校验门（覆盖率/格式/完整性）；新增进度反馈与执行计划预览；修正 Agent 输入声明格式断层；补充故障排查指南与 Token 消耗估算表 |
-| v1.0.0 | 2026-06-25 | 初始版本发布：包含知识分析师、项目专家、知识教学专家三大 Agent，支持 Obsidian 双链与热插拔扩展 |
+> 完整的版本变更记录请参阅 [CHANGELOG.md](./CHANGELOG.md)。
 
 ---
 
