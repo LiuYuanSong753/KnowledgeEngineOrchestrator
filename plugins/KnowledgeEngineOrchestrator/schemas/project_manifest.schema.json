@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://knowledge-engine-orchestrator/schemas/project_manifest.json",
+  "title": "Project Manifest",
+  "description": "项目专家产出的项目结构与知识点映射数据。由 step-project 生成，供教学专家和校验器消费。",
+  "type": "object",
+  "required": ["domain", "knowledge_graph_version", "projects", "mappings"],
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "领域名称"
+    },
+    "knowledge_graph_version": {
+      "type": "string",
+      "description": "引用的知识图谱版本号，用于一致性校验"
+    },
+    "total_projects": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "项目总数"
+    },
+    "coverage_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "知识点覆盖率百分比"
+    },
+    "projects": {
+      "type": "array",
+      "minItems": 1,
+      "description": "项目列表",
+      "items": {
+        "$ref": "#/definitions/Project"
+      }
+    },
+    "mappings": {
+      "type": "array",
+      "minItems": 1,
+      "description": "知识点-项目映射关系列表",
+      "items": {
+        "$ref": "#/definitions/Mapping"
+      }
+    }
+  },
+  "definitions": {
+    "Project": {
+      "type": "object",
+      "required": ["id", "name", "difficulty", "covered_knowledge_ids"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^Proj-\\d{3}$",
+          "description": "项目唯一标识，如 Proj-001",
+          "examples": ["Proj-001", "Proj-015"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "项目标准命名"
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["入门级", "进阶级", "高级"],
+          "description": "项目难度等级"
+        },
+        "description": {
+          "type": "string",
+          "description": "项目简要描述"
+        },
+        "structure": {
+          "type": "object",
+          "description": "项目步骤结构",
+          "properties": {
+            "background": { "type": "string" },
+            "core_knowledge": { "type": "string" },
+            "practice_steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "step_id": { "type": "string" },
+                  "step_name": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            },
+            "deviations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "deviation_id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "related_knowledge_id": { "type": "string" }
+                }
+              }
+            },
+            "acceptance_criteria": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "knowledge_id": { "type": "string" },
+                  "standard": { "type": "string" },
+                  "quantified_target": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "covered_knowledge_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "description": "本项目覆盖的知识点 ID 列表"
+        }
+      }
+    },
+    "Mapping": {
+      "type": "object",
+      "required": ["knowledge_id", "knowledge_name", "project_id", "project_name", "application_step"],
+      "properties": {
+        "knowledge_id": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,5}-\\d{3}$"
+        },
+        "knowledge_name": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^Proj-\\d{3}$"
+        },
+        "project_name": {
+          "type": "string"
+        },
+        "application_step": {
+          "type": "string",
+          "description": "精确到子步骤的应用环节描述，如 步骤3.2 特征工程-异常值检测",
+          "examples": ["步骤2.1 数据加载与清洗", "步骤3.2 特征工程-异常值检测"]
+        },
+        "proficiency_requirement": {
+          "type": "string",
+          "enum": ["了解", "理解", "熟练应用"],
+          "description": "掌握要求等级"
+        }
+      }
+    }
+  }
+}

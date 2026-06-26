@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://knowledge-engine-orchestrator/schemas/teaching_outline.json",
+  "title": "Teaching Outline",
+  "description": "知识教学专家产出的教学单元结构化数据。由 step-teach 生成，供扩展 Skill 消费。",
+  "type": "object",
+  "required": ["domain", "total_units", "units"],
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "领域名称"
+    },
+    "knowledge_graph_version": {
+      "type": "string",
+      "description": "引用的知识图谱版本号"
+    },
+    "project_manifest_version": {
+      "type": "string",
+      "description": "引用的项目清单版本号"
+    },
+    "total_units": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "教学单元总数"
+    },
+    "style_profile": {
+      "type": "string",
+      "enum": ["academic", "practical", "certification"],
+      "description": "使用的教学风格预设"
+    },
+    "units": {
+      "type": "array",
+      "minItems": 1,
+      "description": "教学单元列表（按学习路径排序）",
+      "items": {
+        "$ref": "#/definitions/TeachingUnit"
+      }
+    }
+  },
+  "definitions": {
+    "TeachingUnit": {
+      "type": "object",
+      "required": ["id", "name", "difficulty", "knowledge_ids", "linked_project_ids"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^EDU-\\d{3}$",
+          "description": "教学单元唯一标识，如 EDU-001",
+          "examples": ["EDU-001", "EDU-012"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "教学单元名称"
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["入门级", "进阶级", "高级"],
+          "description": "教学单元难度（取涵盖知识点的最高难度）"
+        },
+        "learning_objective": {
+          "type": "string",
+          "description": "学习目标概括"
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "description": "前置知识要求的知识点 ID"
+        },
+        "knowledge_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "description": "本单元涵盖的知识点 ID 列表"
+        },
+        "linked_project_ids": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "pattern": "^Proj-\\d{3}$"
+              },
+              "application_step": {
+                "type": "string",
+                "description": "精确应用步骤编号"
+              }
+            }
+          },
+          "description": "关联的项目 ID 及具体应用步骤"
+        },
+        "inquiry_questions": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          },
+          "description": "启发式灵魂拷问（仅问题，不含答案）"
+        }
+      }
+    }
+  }
+}

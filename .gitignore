@@ -1,0 +1,8 @@
+# 自动生成的共享缓存（由 Agent 自动产出，禁止手动编辑）
+plugins/KnowledgeEngineOrchestrator/.shared/
+
+# 自动生成的领域知识库产出目录
+plugins/KnowledgeEngineOrchestrator/领域知识库/
+
+# 兼容英文目录名
+plugins/KnowledgeEngineOrchestrator/knowledge-bases/

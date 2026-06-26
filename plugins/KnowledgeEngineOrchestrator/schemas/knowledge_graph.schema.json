@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://knowledge-engine-orchestrator/schemas/knowledge_graph.json",
+  "title": "Knowledge Graph",
+  "description": "知识分析师产出的知识点全集结构化数据。由 step-analyze 生成，供所有下游 Agent 消费。",
+  "type": "object",
+  "required": ["domain", "version", "knowledge_points"],
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "领域名称，由用户输入"
+    },
+    "version": {
+      "type": "string",
+      "description": "知识图谱版本号，用于增量更新校验"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "生成时间戳"
+    },
+    "total_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "知识点总数"
+    },
+    "knowledge_points": {
+      "type": "array",
+      "minItems": 1,
+      "description": "知识点列表",
+      "items": {
+        "$ref": "#/definitions/KnowledgePoint"
+      }
+    }
+  },
+  "definitions": {
+    "KnowledgePoint": {
+      "type": "object",
+      "required": ["id", "name", "type", "difficulty", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z]{2,5}-\\d{3}$",
+          "description": "知识点唯一标识，格式：领域缩写-序号，如 PCE-001",
+          "examples": ["PCE-001", "ML-015", "DS-042"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "知识点标准命名"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["独立知识点", "联动知识点"],
+          "description": "知识点类型"
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["入门级", "进阶级", "高级"],
+          "description": "学习难度等级"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "1-2句话核心定义与作用"
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "description": "前置依赖知识点 ID 列表，无则空数组"
+        },
+        "related_knowledge": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
+          },
+          "description": "关联知识点 ID 列表，独立知识点可空数组"
+        }
+      }
+    }
+  }
+}
