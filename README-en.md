@@ -62,7 +62,7 @@ flowchart TD
     K -->|Syntax check| M[.shared/syntax_check_report.md]
 ```
 
-> **v2.8 Architecture**: Entry point is `skill/requirements-analyst` (Requirements Analyst). Three core Skills (Knowledge Analyst, Project Expert, Knowledge Educator) fully optimized with enhanced data structures, style-driven content generation, and automated quality gates.
+> **v2.8 Architecture**: Entry point is `plugins/knowledge-engine-orchestrator/skill/requirements-analyst` (Requirements Analyst). Three core Skills (Knowledge Analyst, Project Expert, Knowledge Educator) fully optimized with enhanced data structures, style-driven content generation, and automated quality gates.
 
 ---
 
@@ -70,30 +70,30 @@ flowchart TD
 
 ```text
 ./
-├── Skill.md                              ← Compatibility redirect entry
-│
-├── skill/                                ← 6 independent Skills
-│   ├── requirements-analyst/Skill.md     ← [order:1] Requirements Analyst (entry)
-│   ├── knowledge-analyst/Skill.md        ← [order:2] Knowledge Analyst
-│   ├── project-expert/Skill.md           ← [order:3] Project Expert
-│   ├── knowledge-educator/Skill.md       ← [order:4] Knowledge Educator
-│   ├── verifier/Skill.md                 ← [order:5] Verifier
-│   └── obsidian-doc-writer/Skill.md      ← [order:6] Obsidian Doc Writer
-│
-├── schemas/                              ← Rules: Pipeline config + JSON Schema
-│   ├── pipeline.config.yml               ← order sequence + rules
-│   ├── requirements_profile.schema.json
-│   ├── knowledge_graph.schema.json       ← v2.8
-│   ├── project_manifest.schema.json      ← v2.8
-│   ├── teaching_outline.schema.json      ← v2.8
-│   └── verification_result.schema.json
-│
-├── templates/                            ← 5 standardized document templates
-│   ├── knowledge-checklist.template.md
-│   ├── project-collection.template.md
-│   ├── teaching-guide.template.md
-│   ├── master-index.template.md
-│   └── progress-tracker.template.md
+├── plugins/
+│   └── knowledge-engine-orchestrator/
+│       ├── skill/                            ← 6 independent Skills
+│       │   ├── requirements-analyst/Skill.md     ← [order:1] Requirements Analyst (entry)
+│       │   ├── knowledge-analyst/Skill.md        ← [order:2] Knowledge Analyst
+│       │   ├── project-expert/Skill.md           ← [order:3] Project Expert
+│       │   ├── knowledge-educator/Skill.md       ← [order:4] Knowledge Educator
+│       │   ├── verifier/Skill.md                 ← [order:5] Verifier
+│       │   └── obsidian-doc-writer/Skill.md      ← [order:6] Obsidian Doc Writer
+│       │
+│       ├── schemas/                          ← Rules: Pipeline config + JSON Schema
+│       │   ├── pipeline.config.yml               ← order sequence + rules
+│       │   ├── requirements_profile.schema.json
+│       │   ├── knowledge_graph.schema.json       ← v2.8
+│       │   ├── project_manifest.schema.json      ← v2.8
+│       │   ├── teaching_outline.schema.json      ← v2.8
+│       │   └── verification_result.schema.json
+│       │
+│       └── templates/                        ← 5 standardized document templates
+│           ├── knowledge-checklist.template.md
+│           ├── project-collection.template.md
+│           ├── teaching-guide.template.md
+│           ├── master-index.template.md
+│           └── progress-tracker.template.md
 │
 └── knowledge-bases/                      ← Output: user-facing knowledge assets
     └── [domain-name]/
@@ -163,10 +163,10 @@ Each Skill independently reports:
 ## 🎛️ Extension
 
 ### Add a Skill
-Insert a step in `schemas/pipeline.config.yml` with `order` and `depends_on`, then create `skill/your-agent/Skill.md`. Layer-1 Skills output JSON only; Layer-2 handles Markdown.
+Insert a step in `plugins/knowledge-engine-orchestrator/schemas/pipeline.config.yml` with `order` and `depends_on`, then create `plugins/knowledge-engine-orchestrator/skill/your-agent/Skill.md`. Layer-1 Skills output JSON only; Layer-2 handles Markdown.
 
 ### Add a Doc Type
-Create `.template.md` in `templates/`, append `outputs_markdown` in pipeline config, add rendering logic in obsidian-doc-writer.
+Create `.template.md` in `plugins/knowledge-engine-orchestrator/templates/`, append `outputs_markdown` in pipeline config, add rendering logic in obsidian-doc-writer.
 
 ### Custom Subject Syllabus
 Place `subjects_syllabus.json` under `.shared/` — the Knowledge Analyst will use it as the skeleton for stable, reproducible knowledge decomposition.

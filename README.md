@@ -20,7 +20,7 @@
 
 ### 这个插件提供什么价值？
 
-本插件内置六类 AI 专家，按 `schemas/pipeline.config.yml` 中定义的 `order` 顺序自动串联：
+本插件内置六类 AI 专家，按 `plugins/knowledge-engine-orchestrator/schemas/pipeline.config.yml` 中定义的 `order` 顺序自动串联：
 
 | order | Skill | 职责 |
 |:---:|:---|:---|
@@ -80,7 +80,7 @@ flowchart TD
 ```
 
 > **v2.8 架构要点**：
-> - **插件入口**为 `skill/requirements-analyst`（需求分析师），先通过三阶段交互精准锁定学习范围与生成规格
+> - **插件入口**为 `plugins/knowledge-engine-orchestrator/skill/requirements-analyst`（需求分析师），先通过三阶段交互精准锁定学习范围与生成规格
 > - **知识分析师**（order:2）：基于学科缩写生成知识点 ID，支持跨学科依赖、面试星级/学术引用/场景标记等风格字段，含输入校验门与可行性估算
 > - **项目专家**（order:3）：情境驱动设计，根据学习者画像调整项目背景与难度，支持目标匹配度自检与负荷控制
 > - **知识教学专家**（order:4）：可执行打包算法（聚类+耦合+联动判断），归属唯一性约束，5 风格深度适配，内容自动校验，孤儿知识点处理
@@ -92,30 +92,30 @@ flowchart TD
 
 ```text
 ./
-├── Skill.md                              ← 【兼容保留】重定向入口
-│
-├── skill/                                ← 【执行层】6 个独立 Skill
-│   ├── requirements-analyst/Skill.md     ← [order:1] 需求分析师（插件入口）
-│   ├── knowledge-analyst/Skill.md        ← [order:2] 知识分析师
-│   ├── project-expert/Skill.md           ← [order:3] 项目专家
-│   ├── knowledge-educator/Skill.md       ← [order:4] 知识教学专家
-│   ├── verifier/Skill.md                 ← [order:5] 闭环校验器
-│   └── obsidian-doc-writer/Skill.md      ← [order:6] Obsidian文档编写助手
-│
-├── schemas/                              ← 【规则层】Pipeline 配置 + JSON Schema
-│   ├── pipeline.config.yml               ← order 顺序 + 运行规则
-│   ├── requirements_profile.schema.json  ← 需求配置数据契约
-│   ├── knowledge_graph.schema.json       ← v2.8 知识点数据结构
-│   ├── project_manifest.schema.json      ← v2.8 项目映射数据结构
-│   ├── teaching_outline.schema.json      ← v2.8 教学大纲数据结构
-│   └── verification_result.schema.json  ← 校验结果数据结构
-│
-├── templates/                            ← 【模板层】5 个标准化文档模板
-│   ├── knowledge-checklist.template.md
-│   ├── project-collection.template.md
-│   ├── teaching-guide.template.md
-│   ├── master-index.template.md
-│   └── progress-tracker.template.md
+├── plugins/
+│   └── knowledge-engine-orchestrator/
+│       ├── skill/                            ← 【执行层】6 个独立 Skill
+│       │   ├── requirements-analyst/Skill.md     ← [order:1] 需求分析师（插件入口）
+│       │   ├── knowledge-analyst/Skill.md        ← [order:2] 知识分析师
+│       │   ├── project-expert/Skill.md           ← [order:3] 项目专家
+│       │   ├── knowledge-educator/Skill.md       ← [order:4] 知识教学专家
+│       │   ├── verifier/Skill.md                 ← [order:5] 闭环校验器
+│       │   └── obsidian-doc-writer/Skill.md      ← [order:6] Obsidian文档编写助手
+│       │
+│       ├── schemas/                          ← 【规则层】Pipeline 配置 + JSON Schema
+│       │   ├── pipeline.config.yml               ← order 顺序 + 运行规则
+│       │   ├── requirements_profile.schema.json  ← 需求配置数据契约
+│       │   ├── knowledge_graph.schema.json       ← v2.8 知识点数据结构
+│       │   ├── project_manifest.schema.json      ← v2.8 项目映射数据结构
+│       │   ├── teaching_outline.schema.json      ← v2.8 教学大纲数据结构
+│       │   └── verification_result.schema.json   ← 校验结果数据结构
+│       │
+│       └── templates/                        ← 【模板层】5 个标准化文档模板
+│           ├── knowledge-checklist.template.md
+│           ├── project-collection.template.md
+│           ├── teaching-guide.template.md
+│           ├── master-index.template.md
+│           └── progress-tracker.template.md
 │
 └── 领域知识库/                           ← 【产出层】用户可见的最终知识资产
     └── [领域名称]/
@@ -203,10 +203,10 @@ flowchart TD
 ## 🎛️ 高级扩展
 
 ### 新增 Skill
-在 `schemas/pipeline.config.yml` 中插入步骤（指定 order 和 depends_on），然后在 `skill/` 下创建对应 `Skill.md`。遵循层1仅产出 JSON、层2负责 Markdown 的职责分离原则。
+在 `plugins/knowledge-engine-orchestrator/schemas/pipeline.config.yml` 中插入步骤（指定 order 和 depends_on），然后在 `plugins/knowledge-engine-orchestrator/skill/` 下创建对应 `Skill.md`。遵循层1仅产出 JSON、层2负责 Markdown 的职责分离原则。
 
 ### 新增文档类型
-在 `templates/` 下创建 `.template.md`，在 `schemas/pipeline.config.yml` 中追加 outputs_markdown，在 `skill/obsidian-doc-writer/Skill.md` 中增加渲染逻辑。
+在 `plugins/knowledge-engine-orchestrator/templates/` 下创建 `.template.md`，在 `plugins/knowledge-engine-orchestrator/schemas/pipeline.config.yml` 中追加 outputs_markdown，在 `plugins/knowledge-engine-orchestrator/skill/obsidian-doc-writer/Skill.md` 中增加渲染逻辑。
 
 ### 学科骨架定制
 在 `领域知识库/[领域名称]/.shared/subjects_syllabus.json` 中定义学科核心知识点骨架，知识分析师将以其为基准生成，确保多次运行核心知识点 ID 与名称稳定。
