@@ -1,7 +1,7 @@
 ---
 name: obsidian-doc-writer
 description: Obsidian文档编写助手（order: 6） — 层2统一文档渲染模块。读取全部 JSON 中间件 + templates/*.template.md 模板，按统一语法格式生成全部5 个 Markdown 文档，并自动完成 Obsidian 语法校验与修正。独立通报执行状态与语法校验结果。
-version: 2.6.0
+version: 2.8.0
 ---
 
 # Obsidian文档编写助手

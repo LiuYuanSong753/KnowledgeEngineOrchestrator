@@ -4,13 +4,13 @@
     "name": "LiuYuanSong753"
   },
   "metadata": {
-    "description": "知识体系构建引擎-分布式编排器 v2.6",
-    "version": "2.6.0"
+    "description": "知识体系构建引擎-分布式编排器 v2.8",
+    "version": "2.8.0"
   },
   "plugins": [
     {
       "name": "knowledge-engine-orchestrator",
-      "description": "知识体系构建引擎-分布式编排器 v2.6。入口变更为需求分析师(skill/knowledge-analyst)，通过三拆(领域→方向→学科)精准锁定学习范围后自动拆解知识点。各 Skill 按 pipeline.config.yml 中 order 顺序独立执行并通报状态，Obsidian文档编写助手基于模板统一渲染全部文档。",
+      "description": "知识体系构建引擎-分布式编排器 v2.8。入口为需求分析师(skill/requirements-analyst)，通过三阶段交互(三拆→学习者画像→生成规格)精准锁定需求。知识分析师/项目专家/知识教学专家三核心Skill全面优化，强化数据规范、风格定制与质量自动化。6 Skill按 pipeline.config.yml 中 order 顺序独立执行并通报状态。",
       "source": "../plugins/KnowledgeEngineOrchestrator",
       "strict": false
     }

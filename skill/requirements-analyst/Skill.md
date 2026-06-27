@@ -1,7 +1,7 @@
 ---
 name: requirements-analyst
 description: 需求分析师（order: 1） — 插件入口 Skill。通过三段式交互（三拆范围界定 → 学习者画像 → 生成规格配置）精准采集用户学习需求，输出 requirements_profile.json 供下游知识分析师执行知识点拆解。独立通报执行状态。
-version: 2.7.0
+version: 2.8.0
 ---
 
 # 需求分析师

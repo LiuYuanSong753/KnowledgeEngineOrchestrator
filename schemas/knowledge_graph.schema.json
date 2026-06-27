@@ -2,13 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://knowledge-engine-orchestrator/schemas/knowledge_graph.json",
   "title": "Knowledge Graph",
-  "description": "知识分析师产出的知识点全集结构化数据。由 step-analyze 生成，供所有下游 Agent 消费。",
+  "description": "知识分析师产出的知识点全集结构化数据（v2.8）。由 step-analyze (order:2) 生成，供所有下游 Agent 消费。",
   "type": "object",
-  "required": ["domain", "version", "knowledge_points"],
+  "required": ["domain", "direction", "version", "knowledge_points", "subjects_covered"],
   "properties": {
     "domain": {
       "type": "string",
-      "description": "领域名称，由用户输入"
+      "description": "领域名称，来自 requirements_profile.json"
+    },
+    "direction": {
+      "type": "string",
+      "description": "方向名称，来自 requirements_profile.json"
     },
     "version": {
       "type": "string",
@@ -17,12 +21,64 @@
     "generated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "生成时间戳"
+      "description": "生成时间戳 ISO 8601"
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "对全部输出字段 JSON 字符串的 SHA-256 值，供下游断点续跑"
     },
     "total_count": {
       "type": "integer",
       "minimum": 1,
       "description": "知识点总数"
+    },
+    "subjects_covered": {
+      "type": "array",
+      "minItems": 1,
+      "description": "已覆盖的学科列表（含缩写）",
+      "items": {
+        "type": "object",
+        "required": ["subject", "abbreviation"],
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "学科名称"
+          },
+          "abbreviation": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}$",
+            "description": "学科缩写（2-5位大写字母），用于知识点 ID 前缀"
+          }
+        }
+      }
+    },
+    "cross_subject_dependencies": {
+      "type": "array",
+      "description": "跨学科依赖关系记录",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "reason"],
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$",
+            "description": "依赖方知识点 ID"
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$",
+            "description": "被依赖方知识点 ID"
+          },
+          "reason": {
+            "type": "string",
+            "description": "跨学科依赖原因说明"
+          }
+        }
+      }
+    },
+    "truncation_warning": {
+      "type": ["string", "null"],
+      "description": "因点数上限导致的裁剪说明，无裁剪时为 null"
     },
     "knowledge_points": {
       "type": "array",
@@ -36,13 +92,13 @@
   "definitions": {
     "KnowledgePoint": {
       "type": "object",
-      "required": ["id", "name", "type", "difficulty", "description"],
+      "required": ["id", "name", "type", "difficulty", "subject", "description"],
       "properties": {
         "id": {
           "type": "string",
           "pattern": "^[A-Z]{2,5}-\\d{3}$",
-          "description": "知识点唯一标识，格式：领域缩写-序号，如 PCE-001",
-          "examples": ["PCE-001", "ML-015", "DS-042"]
+          "description": "知识点唯一标识，格式：学科缩写-三位序号，如 PYB-001。JSON 中不含 [[ ]] Wiki 语法",
+          "examples": ["PYB-001", "SJFX-003", "MLB-012"]
         },
         "name": {
           "type": "string",
@@ -51,18 +107,22 @@
         },
         "type": {
           "type": "string",
-          "enum": ["独立知识点", "联动知识点"],
-          "description": "知识点类型"
+          "enum": ["核心概念", "方法/算法", "工具实践", "对比辨析", "应用案例"],
+          "description": "知识点类型（v2.8 新枚举，替换原 独立知识点/联动知识点）"
         },
         "difficulty": {
           "type": "string",
           "enum": ["入门级", "进阶级", "高级"],
           "description": "学习难度等级"
         },
+        "subject": {
+          "type": "string",
+          "description": "所属学科名称，必须存在于 subjects_covered 中"
+        },
         "description": {
           "type": "string",
           "minLength": 1,
-          "description": "1-2句话核心定义与作用"
+          "description": "核心定义与作用（G1:1句话 / G2:2-4句话 / G3:+代码 / G4:+案例）"
         },
         "prerequisites": {
           "type": "array",
@@ -70,7 +130,7 @@
             "type": "string",
             "pattern": "^[A-Z]{2,5}-\\d{3}$"
           },
-          "description": "前置依赖知识点 ID 列表，无则空数组"
+          "description": "前置依赖知识点 ID 列表（含跨学科），无则空数组"
         },
         "related_knowledge": {
           "type": "array",
@@ -78,7 +138,37 @@
             "type": "string",
             "pattern": "^[A-Z]{2,5}-\\d{3}$"
           },
-          "description": "关联知识点 ID 列表，独立知识点可空数组"
+          "description": "关联知识点 ID 列表，可空数组"
+        },
+        "exam_weight": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "面试高频星级（1-5），面试突击型风格必填"
+        },
+        "common_questions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "关联的常见面试问题，面试突击型风格进阶级/高级必填"
+        },
+        "application_scenarios": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "实际应用场景描述，项目驱动型风格推荐"
+        },
+        "academic_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "理论引用或公式索引，学术严谨型风格推荐"
+        },
+        "analogy": {
+          "type": "string",
+          "description": "类比或故事化解释，科普故事型风格推荐"
+        },
+        "practice_code": {
+          "type": "string",
+          "description": "核心代码片段，G3/G4 粒度必填"
         }
       }
     }

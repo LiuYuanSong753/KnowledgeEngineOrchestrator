@@ -2,13 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://knowledge-engine-orchestrator/schemas/teaching_outline.json",
   "title": "Teaching Outline",
-  "description": "知识教学专家产出的教学单元结构化数据。由 step-teach 生成，供扩展 Skill 消费。",
+  "description": "知识教学专家产出的教学单元结构化数据（v2.8）。由 step-teach (order:4) 生成，供闭环校验器和文档编写助手消费。",
   "type": "object",
-  "required": ["domain", "total_units", "units"],
+  "required": ["domain", "total_units", "units", "unit_ordering_strategy"],
   "properties": {
     "domain": {
       "type": "string",
       "description": "领域名称"
+    },
+    "direction": {
+      "type": "string",
+      "description": "方向名称"
     },
     "knowledge_graph_version": {
       "type": "string",
@@ -25,13 +29,25 @@
     },
     "style_profile": {
       "type": "string",
-      "enum": ["academic", "practical", "certification"],
+      "enum": ["标准系统型", "面试突击型", "项目驱动型", "学术严谨型", "科普故事型"],
       "description": "使用的教学风格预设"
+    },
+    "unit_ordering_strategy": {
+      "type": "string",
+      "description": "单元排序策略声明，如 topological_by_difficulty"
+    },
+    "upstream_graph_hash": {
+      "type": "string",
+      "description": "生成时 knowledge_graph.json 内容的 SHA-256 哈希"
+    },
+    "upstream_project_hash": {
+      "type": "string",
+      "description": "生成时 project_manifest.json 内容的 SHA-256 哈希"
     },
     "units": {
       "type": "array",
       "minItems": 1,
-      "description": "教学单元列表（按学习路径排序）",
+      "description": "教学单元列表（按 unit_ordering_strategy 排序）",
       "items": {
         "$ref": "#/definitions/TeachingUnit"
       }
@@ -40,7 +56,7 @@
   "definitions": {
     "TeachingUnit": {
       "type": "object",
-      "required": ["id", "name", "difficulty", "knowledge_ids", "linked_project_ids"],
+      "required": ["id", "name", "difficulty", "knowledge_ids", "estimated_minutes", "hooks"],
       "properties": {
         "id": {
           "type": "string",
@@ -51,12 +67,22 @@
         "name": {
           "type": "string",
           "minLength": 1,
-          "description": "教学单元名称"
+          "description": "教学单元名称（纯文本，禁止 [[ ]] wikilink）"
         },
         "difficulty": {
           "type": "string",
           "enum": ["入门级", "进阶级", "高级"],
           "description": "教学单元难度（取涵盖知识点的最高难度）"
+        },
+        "estimated_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "预计学习时长（分钟），公式: 15*(入门*1 + 进阶*2 + 高级*3)，联动单元+10"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "标签，提取自所属知识点的 subject 及名称关键词"
         },
         "learning_objective": {
           "type": "string",
@@ -72,36 +98,79 @@
         },
         "knowledge_ids": {
           "type": "array",
+          "minItems": 1,
           "items": {
             "type": "string",
             "pattern": "^[A-Z]{2,5}-\\d{3}$"
           },
-          "description": "本单元涵盖的知识点 ID 列表"
+          "description": "本单元涵盖的知识点 ID 列表（主归属，不可与其他单元重复）"
         },
-        "linked_project_ids": {
+        "review_knowledge_ids": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "project_id": {
-                "type": "string",
-                "pattern": "^Proj-\\d{3}$"
-              },
-              "application_step": {
-                "type": "string",
-                "description": "精确应用步骤编号"
-              }
-            }
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-\\d{3}$"
           },
-          "description": "关联的项目 ID 及具体应用步骤"
+          "description": "螺旋复习引用，列出已在前序单元中学过的知识点 ID（可选，不影响覆盖校验）"
+        },
+        "pain_point": {
+          "type": "string",
+          "description": "一句话痛点"
+        },
+        "value_proposition": {
+          "type": "string",
+          "description": "一句话价值"
+        },
+        "professional_explanation": {
+          "type": "object",
+          "properties": {
+            "definition": { "type": "string", "description": "专业定义" },
+            "core_mechanism": { "type": "string", "description": "核心机制/原理" },
+            "application_scenarios": { "type": "string", "description": "应用场景" },
+            "combination_logic": { "type": "string", "description": "联动组合逻辑（跨学科联动单元必填）" }
+          }
+        },
+        "plain_language": {
+          "type": "object",
+          "properties": {
+            "story": { "type": "string", "description": "类比故事" },
+            "mapping": { "type": "string", "description": "术语映射" },
+            "application_in_story": { "type": "string", "description": "故事中如何运用" }
+          }
         },
         "inquiry_questions": {
           "type": "array",
           "maxItems": 2,
+          "minItems": 2,
+          "items": { "type": "string" },
+          "description": "启发式灵魂拷问（每个单元恰好 2 个，仅问题，不含答案）"
+        },
+        "hooks": {
+          "type": "array",
+          "minItems": 1,
+          "description": "实战钩子（项目关联的唯一数据源，替代原 linked_project_ids）",
           "items": {
-            "type": "string"
-          },
-          "description": "启发式灵魂拷问（仅问题，不含答案）"
+            "type": "object",
+            "required": ["project_id", "project_name", "application_step", "challenge"],
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "description": "关联项目 ID（Proj-xxx）或 NONE（无项目覆盖）"
+              },
+              "project_name": {
+                "type": "string",
+                "description": "项目名称"
+              },
+              "application_step": {
+                "type": "string",
+                "description": "精确到子步骤的应用环节"
+              },
+              "challenge": {
+                "type": "string",
+                "description": "预期挑战描述（NONE 时说明建议自主设计练习）"
+              }
+            }
+          }
         }
       }
     }

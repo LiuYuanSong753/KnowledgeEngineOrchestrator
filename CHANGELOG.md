@@ -4,6 +4,75 @@
 
 ---
 
+## v2.8.0 (2026-06-27)
+
+### 三核心 Skill 全面优化
+
+#### 知识分析师（order:2）优化
+- **ID 格式规范化**：知识点 ID 严格为 `{学科缩写}-{三位序号}`（如 `PYB-001`），JSON 中移除所有 `[[ ]]` Wiki 语法，缩写由学科独立生成（内置映射表 + 拼音首字母兜底）
+- **知识点结构扩展**：新增风格相关可选字段 — `exam_weight`（面试星级 1-5）、`common_questions`（常见面试问题）、`application_scenarios`、`academic_refs`、`analogy`、`practice_code`（G3/G4 必填）
+- **类型枚举升级**：`type` 从"独立知识点/联动知识点"升级为 5 类新枚举 — 核心概念 / 方法算法 / 工具实践 / 对比辨析 / 应用案例
+- **subjects_covered 结构化**：从字符串数组改为对象数组 `{"subject": "学科名", "abbreviation": "PYB"}`
+- **跨学科依赖支持**：新增 `cross_subject_dependencies` 数组记录跨学科前置关系
+- **输入校验门**：阶段 0 增加 6 项严格校验（`SUBJECTS_EMPTY` / `MAX_POINTS_INVALID` / `GRANULARITY_INVALID` / `DEPTH_INVALID` / `STYLE_INVALID` / `LANGUAGE_INVALID`），返回结构化错误码
+- **可行性估算**：阶段 1 增加点数上限与学科覆盖冲突的自动降级机制（深度降级 → 裁剪提示）
+- **学科骨架支持**：支持从 `subjects_syllabus.json` 加载核心知识点骨架，确保多次运行产物稳定
+- **断点续跑精确化**：基于 `content_hash`（SHA-256）判定上游是否变更
+
+#### 项目专家（order:3）优化
+- **需求分析驱动**：新增 `requirements_profile.json` 为可选输入（强烈建议），根据学习者画像与生成规格调整项目设计
+- **情境驱动原则**：5 种风格深度映射 — 面试突击型（面试场景+模拟讲述）、学术研究型（论文复现+实验对比）、项目驱动型（生产环境+性能指标）、认证考试型（时间限制+标准对照）、科普故事型（通用教学场景）
+- **JSON 结构扩展**：新增字段 — `direction`、`requirements_profile_version`、`estimated_hours`（2~8h）、`project_dependencies`、`learning_path_narrative`
+- **多知识点关联**：`practice_steps[].related_knowledge_ids`（数组）、`deviations[].related_knowledge_ids`（数组，支持交叉偏差）、`acceptance_criteria[].knowledge_ids`（数组，支持组合验收）
+- **映射增强**：`mappings` 新增 `merged_coverage` 字段标记合并覆盖
+- **目标匹配度自检**：存在需求分析时校验项目背景是否呼应 `inferred_goal`，通报附匹配声明
+- **负荷控制**：项目总时长 ≤40h 可配置
+
+#### 知识教学专家（order:4）优化
+- **可执行打包算法**：前置依赖聚类 + 项目步骤耦合聚类 + 跨学科联动判断 + 粒度边界（2~4 知识点/单元）+ 饱和检查
+- **归属唯一性约束**：知识点默认只能归属一个单元的 `knowledge_ids`，新增 `review_knowledge_ids` 支持螺旋复习
+- **联动单元规范**：跨 ≥2 学科且同 deviation/acceptance 共引时必生成为联动单元，`combination_logic` 必填
+- **排序语义标准化**：`unit_ordering_strategy` 声明为 `topological_by_difficulty`（依赖→难度→项目连贯性）
+- **数据结构精简**：移除 `linked_project_ids`（与 `hooks` 冗余），`hooks` 成为唯一项目关联来源
+- **内容质量自动化**：标题纯文本检查、占位符检测、联动单元完整性校验、启发式问题答案泄露检测（不阻塞）
+- **风格深度适配矩阵**：5 风格 × 4 维度（大白话/精讲/问题/钩子）定向调节
+- **孤儿知识点处理**：未关联项目的知识点生成 `project_id: "NONE"` 特殊钩子
+- **元数据扩充**：新增 `estimated_minutes`、`tags`、`review_knowledge_ids`、`upstream_graph_hash`、`upstream_project_hash`
+- **断点续跑精确化**：基于 SHA-256 哈希比对上游文件内容
+
+### Schema 与模板同步更新
+- **重写**：`schemas/knowledge_graph.schema.json` — v2.8 结构（direction、subjects_covered 对象数组、新 type 枚举、风格字段、cross_subject_dependencies）
+- **重写**：`schemas/project_manifest.schema.json` — v2.8 结构（direction、estimated_hours、数组化 related_knowledge_ids/knowledge_ids、project_dependencies、merged_coverage、learning_path_narrative）
+- **重写**：`schemas/teaching_outline.schema.json` — v2.8 结构（移除 linked_project_ids、新增 estimated_minutes/tags/review_knowledge_ids/unit_ordering_strategy/hashes、hooks 增强）
+- **重写**：`templates/knowledge-checklist.template.md` — 新增 direction、style、学科覆盖表、跨学科依赖、面试高频考点区块
+- **重写**：`templates/project-collection.template.md` — 新增 direction、预估学时、前置项目、目标匹配声明、步骤关联知识点
+- **重写**：`templates/teaching-guide.template.md` — 新增方向、排序策略、预估学时、联动单元数、复习提示、孤儿项目处理
+
+### 文档全量更新
+- **更新**：`README.md` — v2.8 架构说明、6 Skill 表格、Mermaid 流程图、新参数表、产出物详解
+- **更新**：`README-en.md` — 英文同步更新
+- **更新**：`marketplace.json` — v2.8.0
+- **更新**：`CHANGELOG.md` — 本条目
+
+### 版本号
+- 2.7.0 → 2.8.0
+
+---
+
+## v2.7.0 (2026-06-27)
+
+### 职责分离：需求分析师 + 知识分析师 拆分
+- **新增**：`skill/requirements-analyst/Skill.md` — 独立需求分析师 Skill（order:1，插件入口），实现完整三阶段交互（三拆→学习者画像→生成规格配置）
+- **恢复**：`skill/knowledge-analyst/Skill.md` — 回归纯知识拆解角色（order:2），接收 requirements_profile.json
+- **数据契约**：新增 `schemas/requirements_profile.schema.json` 定义上下游数据格式
+- **Pipeline 重构**：新增 step-requirements（order:1），全部步骤 order 后移一位，总计 6 核心步骤，通报格式 [N/6]
+- **全 Skill order 引用更新**：project-expert(2→3)、knowledge-educator(3→4)、verifier(4→5)、obsidian-doc-writer(5→6)
+
+### 版本号
+- 2.6.0 → 2.7.0
+
+---
+
 ## v2.6.0 (2026-06-27)
 
 ### 架构革命：中央编排器 → 分布式自编排

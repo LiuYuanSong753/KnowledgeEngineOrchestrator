@@ -1,8 +1,8 @@
-# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.6
+# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.8
 
 **中文** | [English](./README-en.md)
 
-> **一句话定义**：输入学习方向 → 需求分析师三拆锁定范围 → 五Skill按order自动串联 → 产出永久联动的 Obsidian 双链知识库。v2.6 重构为分布式自编排架构，各 Skill 独立通报执行状态。
+> **一句话定义**：输入学习方向 → 需求分析师三拆锁定范围 → 六Skill按order自动串联 → 产出永久联动的 Obsidian 双链知识库。v2.8 三大Skill（知识分析师/项目专家/知识教学专家）全面优化，强化数据规范、风格定制与质量自动化。
 
 ---
 
@@ -20,15 +20,16 @@
 
 ### 这个插件提供什么价值？
 
-本插件内置五类 AI 专家，按 `schemas/pipeline.config.yml` 中定义的 `order` 顺序自动串联：
+本插件内置六类 AI 专家，按 `schemas/pipeline.config.yml` 中定义的 `order` 顺序自动串联：
 
 | order | Skill | 职责 |
 |:---:|:---|:---|
-| 1 | **需求分析师** | 三拆锁定范围 + 知识点体系化拆解 → `knowledge_graph.json` |
-| 2 | **项目专家** | 100% 知识点映射至真实场景项目 → `project_manifest.json` |
-| 3 | **知识教学专家** | 单元打包 + 五维教学结构 → `teaching_outline.json` |
-| 4 | **闭环校验器** | 覆盖率/双链/依赖闭环校验 → `verification_result.json` |
-| 5 | **Obsidian文档编写助手** | 模板渲染全部 5 个 Markdown 文档 + 语法自动修正 |
+| 1 | **需求分析师** | 三阶段交互：三拆锁定范围 → 学习者画像 → 生成规格配置 → `requirements_profile.json` |
+| 2 | **知识分析师** | 体系化知识拆解（学科缩写/跨学科依赖/风格字段/输入校验） → `knowledge_graph.json` |
+| 3 | **项目专家** | 情境驱动项目设计（100% 映射 + 目标匹配 + 负荷控制） → `project_manifest.json` |
+| 4 | **知识教学专家** | 打包算法教学（唯一性约束/联动单元/内容校验/孤儿处理） → `teaching_outline.json` |
+| 5 | **闭环校验器** | 覆盖率/双链/依赖闭环校验 → `verification_result.json` |
+| 6 | **Obsidian文档编写助手** | 模板渲染全部 5 个 Markdown 文档 + 语法自动修正 |
 
 最终，你得到的不再是一堆零散的文档，而是一个**可终身维护、可双向跳转、可迭代扩展**的个人知识库。
 
@@ -48,23 +49,29 @@
 ```mermaid
 flowchart TD
     A[用户输入学习方向] --> B[🧑 需求分析师 order:1]
-    B -->|三拆:领域→方向→学科| B
-    B -->|产出| D[.shared/knowledge_graph.json]
+    B -->|三阶段交互| B
+    B -->|产出| R[.shared/requirements_profile.json]
     
-    D --> E[🧑 项目专家 order:2]
-    E -->|覆盖率=100%校验| E
+    R --> C[🧑 知识分析师 order:2]
+    C -->|学科拆解+风格适配| C
+    C -->|产出| D[.shared/knowledge_graph.json]
+    
+    D --> E[🧑 项目专家 order:3]
+    R -.->|可选参考| E
+    E -->|覆盖率=100%+目标匹配| E
     E -->|产出| F[.shared/project_manifest.json]
     
-    D --> G[🧑 知识教学专家 order:3]
+    D --> G[🧑 知识教学专家 order:4]
     F --> G
+    G -->|打包算法+内容校验| G
     G -->|产出| H[.shared/teaching_outline.json]
     
-    D --> I[✅ 闭环校验器 order:4]
+    D --> I[✅ 闭环校验器 order:5]
     F --> I
     H --> I
     I -->|产出| J[.shared/verification_result.json]
     
-    D --> K[📝 Obsidian文档编写助手 order:5]
+    D --> K[📝 Obsidian文档编写助手 order:6]
     F --> K
     H --> K
     J --> K
@@ -72,11 +79,12 @@ flowchart TD
     K -->|语法校验| M[.shared/syntax_check_report.md]
 ```
 
-> **v2.6 架构要点**：
-> - **插件入口**为 `skill/knowledge-analyst`（需求分析师），先通过"三拆"（领域→方向→学科）精准锁定学习范围，再进行知识拆解
-> - **分布式自编排**：各 Skill 按 `schemas/pipeline.config.yml` 中的 `order` 独立执行并通报状态，不再依赖中央编排器
-> - **独立状态通报**：每个 Skill 完成后输出 `[N/5]` 格式状态报告，含完成摘要 + 下一步提示 + 依赖文件路径
-> - **两层分离**：层1（order:1-4）仅产出 JSON，层2（order:5）基于模板统一渲染全部 Markdown
+> **v2.8 架构要点**：
+> - **插件入口**为 `skill/requirements-analyst`（需求分析师），先通过三阶段交互精准锁定学习范围与生成规格
+> - **知识分析师**（order:2）：基于学科缩写生成知识点 ID，支持跨学科依赖、面试星级/学术引用/场景标记等风格字段，含输入校验门与可行性估算
+> - **项目专家**（order:3）：情境驱动设计，根据学习者画像调整项目背景与难度，支持目标匹配度自检与负荷控制
+> - **知识教学专家**（order:4）：可执行打包算法（聚类+耦合+联动判断），归属唯一性约束，5 风格深度适配，内容自动校验，孤儿知识点处理
+> - **两层分离**：层1（order:1-5）仅产出 JSON，层2（order:6）基于模板统一渲染全部 Markdown
 
 ---
 
@@ -84,21 +92,23 @@ flowchart TD
 
 ```text
 ./
-├── Skill.md                              ← 【兼容保留】v2.6 重定向入口
+├── Skill.md                              ← 【兼容保留】重定向入口
 │
-├── skill/                                ← 【执行层】5 个独立 Skill
-│   ├── knowledge-analyst/Skill.md        ← [order:1] 需求分析师（插件入口）
-│   ├── project-expert/Skill.md           ← [order:2] 项目专家
-│   ├── knowledge-educator/Skill.md       ← [order:3] 知识教学专家
-│   ├── verifier/Skill.md                 ← [order:4] 闭环校验器
-│   └── obsidian-doc-writer/Skill.md      ← [order:5] Obsidian文档编写助手
+├── skill/                                ← 【执行层】6 个独立 Skill
+│   ├── requirements-analyst/Skill.md     ← [order:1] 需求分析师（插件入口）
+│   ├── knowledge-analyst/Skill.md        ← [order:2] 知识分析师
+│   ├── project-expert/Skill.md           ← [order:3] 项目专家
+│   ├── knowledge-educator/Skill.md       ← [order:4] 知识教学专家
+│   ├── verifier/Skill.md                 ← [order:5] 闭环校验器
+│   └── obsidian-doc-writer/Skill.md      ← [order:6] Obsidian文档编写助手
 │
 ├── schemas/                              ← 【规则层】Pipeline 配置 + JSON Schema
 │   ├── pipeline.config.yml               ← order 顺序 + 运行规则
-│   ├── knowledge_graph.schema.json
-│   ├── project_manifest.schema.json
-│   ├── teaching_outline.schema.json
-│   └── verification_result.schema.json
+│   ├── requirements_profile.schema.json  ← 需求配置数据契约
+│   ├── knowledge_graph.schema.json       ← v2.8 知识点数据结构
+│   ├── project_manifest.schema.json      ← v2.8 项目映射数据结构
+│   ├── teaching_outline.schema.json      ← v2.8 教学大纲数据结构
+│   └── verification_result.schema.json  ← 校验结果数据结构
 │
 ├── templates/                            ← 【模板层】5 个标准化文档模板
 │   ├── knowledge-checklist.template.md
@@ -107,12 +117,10 @@ flowchart TD
 │   ├── master-index.template.md
 │   └── progress-tracker.template.md
 │
-├── docs/                                 ← 【设计文档】
-│   └── 领域知识分析师-设计文档.md
-│
 └── 领域知识库/                           ← 【产出层】用户可见的最终知识资产
     └── [领域名称]/
         ├── .shared/                      ← 标准化 JSON 中间件（独立存储）
+        │   ├── requirements_profile.json
         │   ├── knowledge_graph.json
         │   ├── project_manifest.json
         │   ├── teaching_outline.json
@@ -142,20 +150,20 @@ flowchart TD
 
 在你的 AI 对话中输入：
 
-> **"请使用知识分析师分析『提示词工程』"**
+> **"请使用需求分析师分析『提示词工程』"**
 
-需求分析师将自动执行"三拆"锁定学习范围，确认后自动拆解知识点，随后按 order 顺序依次触发后续 Skill。
+需求分析师将自动执行三阶段交互锁定学习范围与配置，确认后依次触发后续 Skill。
 
 #### 带参数运行
 
-> **"请使用知识分析师分析『Python数据分析』，拆分粒度=fine，风格=实践导向，知识点上限=80。"**
+> **"分析『Python数据分析』，拆分粒度=G3，深度=D2，风格=面试突击型，知识点上限=20。"**
 
 | 参数 | 可选值 | 默认值 | 说明 |
 |:---|:---|:---|:---|
-| `granularity` | `coarse` / `medium` / `fine` | `medium` | 知识点拆分粒度 |
-| `depth_mode` | `overview` / `comprehensive` | `comprehensive` | 生成深度 |
-| `max_knowledge_points` | 任意正整数 | `150` | 知识点数量上限 |
-| `style_profile` | `academic` / `practical` / `certification` | `academic` | 风格预设 |
+| `granularity` | `G1` / `G2` / `G3` / `G4` | `G3` | 知识点拆分粒度（概念→原理→代码→案例） |
+| `depth` | `D1` / `D2` / `D3` | `D2` | 生成深度（概述→标准→深钻） |
+| `max_points` | 5~200 | `20` | 知识点数量上限 |
+| `style` | 标准系统型 / 面试突击型 / 项目驱动型 / 学术严谨型 / 科普故事型 | `标准系统型` | 风格预设 |
 
 ---
 
@@ -164,9 +172,9 @@ flowchart TD
 | 文件 | 内容概要 | 核心价值 |
 | :--- | :--- | :--- |
 | **0-体系总索引.md** | 校验报告 + Mermaid 知识图谱 + 映射表 + 引用索引 + 学习路径 | 全局鸟瞰，映射表支持双向检索 |
-| **1-领域知识点清单.md** | 结构化表格：ID、名称、难度、前置依赖、关联关系 | 领域知识骨架，一切产出的唯一事实来源 |
-| **2-项目集.md** | 5+2 框架设计的完整项目（背景/思想/步骤/偏差/验收） | 每个项目覆盖一组知识点，验收含量化指标 |
-| **3-领域知识教学指南.md** | 按教学单元组织的讲解（价值锚点+精讲+故事+拷问+钩子） | 钩子精确指向项目步骤，学完即练 |
+| **1-领域知识点清单.md** | 结构化表格：ID、名称、难度、学科、前置依赖、面试星级/场景标记 | 领域知识骨架，含跨学科依赖关系与面试高频考点 |
+| **2-项目集.md** | 情境驱动设计项目（背景/思想/步骤/偏差/验收），含量化指标和预估学时 | 每个项目覆盖一组知识点，与学习者目标匹配 |
+| **3-领域知识教学指南.md** | 按教学单元组织的讲解（价值锚点+精讲+大白话+追问+钩子），含学时估算 | 钩子精确指向项目步骤，支持联动单元与孤儿知识点 |
 | **4-进度追踪看板.md** | 按知识点 ID 罗列的 checkbox 清单 + 聚合进度统计 | 可视化学习进度追踪 |
 
 ---
@@ -175,19 +183,19 @@ flowchart TD
 
 插件自动检测 `领域知识库/[领域名称]/.shared/` 目录中的已有缓存：
 
-- **自动跳过**：若对应 JSON 已存在且上游未更新，对应 Skill 询问是否复用
+- **自动跳过**：若对应 JSON 已存在且上游 content_hash/SHA-256 未变化，对应 Skill 询问是否复用
 - **强制全量**：输入"强制全量重跑"忽略所有缓存
-- **局部更新**：修改某 Skill 后只需重跑该 Skill + order:5（文档渲染）
+- **局部更新**：修改某 Skill 后只需重跑该 Skill + order:6（文档渲染）
 
 每个 Skill 执行前会独立通报其状态：
 
 ```
-✅ [1/5] 需求分析师 完成
+✅ [1/6] 需求分析师 完成
    领域：计算机 / 方向：人工智能 / 学科：Python基础+数据分析
-   共拆解 62 个知识点（入门级 20 / 进阶级 30 / 高级 12）
+   风格：面试突击型 / 粒度：G3 / 深度：D2 / 上限：20 点
    ──────────────────────────
-   下一步：请执行项目专家（order: 2）进行项目实践设计。
-   依赖文件：领域知识库/人工智能-Python全栈基础/.shared/knowledge_graph.json
+   下一步：请执行知识分析师（order: 2）进行体系化知识拆解。
+   依赖文件：领域知识库/人工智能-Python全栈基础/.shared/requirements_profile.json
 ```
 
 ---
@@ -200,12 +208,15 @@ flowchart TD
 ### 新增文档类型
 在 `templates/` 下创建 `.template.md`，在 `schemas/pipeline.config.yml` 中追加 outputs_markdown，在 `skill/obsidian-doc-writer/Skill.md` 中增加渲染逻辑。
 
+### 学科骨架定制
+在 `领域知识库/[领域名称]/.shared/subjects_syllabus.json` 中定义学科核心知识点骨架，知识分析师将以其为基准生成，确保多次运行核心知识点 ID 与名称稳定。
+
 ---
 
 ## ⚠️ 注意事项
 
 - **AI 生成属性**：所有产出物均由 LLM 自动生成，务必根据专业背景审核
-- **ID 不可变性**：知识点ID（如 `PCE-001`）一旦生成终身不得修改
+- **ID 不可变性**：知识点ID（如 `PYB-001`）一旦生成终身不得修改，格式为 `{学科缩写}-{三位序号}`
 - **只读缓存**：`.shared/` 目录下 JSON 由系统自动维护，请勿手动修改
 
 ---

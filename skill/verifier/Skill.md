@@ -1,7 +1,7 @@
 ---
 name: verifier
 description: 闭环校验器（order: 5） — 扫描全部 JSON 中间件，校验知识点覆盖率、项目映射完整性、双链有效性与依赖闭环。独立通报执行状态。输出 verification_result.json（含 Mermaid 图谱、映射表、引用索引、学习路径、进度数据），文档渲染由 Obsidian文档编写助手（order: 6）统一完成。
-version: 2.6.0
+version: 2.8.0
 ---
 
 # 闭环校验器
