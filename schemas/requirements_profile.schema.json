@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schemas/requirements_profile.schema.json",
+  "title": "学习需求画像 (Requirements Profile)",
+  "description": "需求分析师（order: 1）产出的结构化需求画像，为下游知识分析师提供精准的学科范围与生成规格。",
+  "type": "object",
+  "required": ["knowledge_scope", "generation_config"],
+  "properties": {
+    "knowledge_scope": {
+      "type": "object",
+      "description": "三拆锁定的知识范围",
+      "required": ["domain", "direction", "subjects"],
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "顶级领域（如 计算机科学、数学与统计学）",
+          "minLength": 1
+        },
+        "direction": {
+          "type": "string",
+          "description": "学习方向（如 人工智能、数据科学）",
+          "minLength": 1
+        },
+        "subjects": {
+          "type": "array",
+          "description": "用户确认的学科/主题集合",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "learner_profile": {
+      "type": "object",
+      "description": "学习者画像（选填，可跳过）",
+      "properties": {
+        "age": {
+          "type": ["integer", "null"],
+          "description": "年龄（null 表示跳过）",
+          "minimum": 1,
+          "maximum": 150
+        },
+        "identity": {
+          "type": ["string", "null"],
+          "description": "身份：初中生/高中生 / 大学低年级 / 大学高年级 / 研究生 / 求职者 / 职场转型者 / 兴趣学习者 / 其他",
+          "enum": [
+            "初中生/高中生",
+            "大学低年级（大一/大二）",
+            "大学高年级（大三/大四）",
+            "研究生",
+            "求职者",
+            "职场转型者",
+            "兴趣学习者",
+            null
+          ]
+        },
+        "inferred_goal": {
+          "type": "string",
+          "description": "系统推断的学习目标（如 初级算法工程师面试准备）"
+        }
+      }
+    },
+    "generation_config": {
+      "type": "object",
+      "description": "生成规格配置",
+      "required": ["granularity", "depth", "max_points", "style", "language"],
+      "properties": {
+        "granularity": {
+          "type": "string",
+          "description": "知识拆分粒度",
+          "enum": ["G1", "G2", "G3", "G4"]
+        },
+        "depth": {
+          "type": "string",
+          "description": "生成深度",
+          "enum": ["D1", "D2", "D3"]
+        },
+        "max_points": {
+          "type": "integer",
+          "description": "知识点数量上限",
+          "minimum": 5,
+          "maximum": 50
+        },
+        "style": {
+          "type": "string",
+          "description": "文本风格预设",
+          "enum": [
+            "标准系统型",
+            "面试突击型",
+            "项目驱动型",
+            "学术严谨型",
+            "科普故事型"
+          ]
+        },
+        "language": {
+          "type": "string",
+          "description": "生成语言",
+          "enum": ["zh-CN", "en", "bilingual"]
+        }
+      }
+    }
+  }
+}

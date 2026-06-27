@@ -6,3 +6,6 @@ plugins/KnowledgeEngineOrchestrator/领域知识库/
 
 # 兼容英文目录名
 plugins/KnowledgeEngineOrchestrator/knowledge-bases/
+
+# 文档
+docs/

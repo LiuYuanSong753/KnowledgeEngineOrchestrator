@@ -4,6 +4,109 @@
 
 ---
 
+## v2.6.0 (2026-06-27)
+
+### 架构革命：中央编排器 → 分布式自编排
+- **入口迁移**：插件入口从根 `Skill.md`（中央编排器）变更为 `skill/knowledge-analyst`（需求分析师）
+- **Skill.md 弱化**：原 242 行编排器降级为 46 行兼容性重定向入口
+- **运行契约迁移**：原编排器的 8 条核心运行契约全部分解迁移至各对应 Skill 的"架构合约"章节
+- **职责分离迁移**：层1/层2 职责定义迁移至各 Skill 角色定位中
+- **扩展规范迁移**：模板/Schema 对照表迁移至 obsidian-doc-writer，中间件清单分布至各 Skill
+
+### 新功能：三拆需求分析
+- **基于设计文档**：`docs/领域知识分析师-设计文档.md` 的"三拆双层"方法论落地
+- **第一拆**：领域拆分 — 自动分析用户学习内容所属领域
+- **第二拆**：方向拆分 — 交互式引导用户明确学习方向
+- **第三拆**：学科拆分 — 确定学科范围并征询扩展
+- **知识分析师**（原）→ **需求分析师**（新）：继承知识拆解能力，新增需求澄清前置环节
+
+### 独立状态通报机制
+- 各 Skill 不再依赖中央编排器汇报，改为独立输出 `[N/5]` 格式的状态报告
+- 每条状态报告包含：完成摘要 + 下一步提示 + 依赖文件路径
+- 执行计划不再由编排器统一下发，改为各 Skill 按 order 独立感知
+
+### Pipeline 新增 order 参数
+- `schemas/pipeline.config.yml` 新增 `order` 字段（1-based），明确定义执行顺序
+- `depends_on` 保留用于数据依赖声明，`order` 用于执行序列
+- 支持通过 order 灵活调整 Skill 执行优先级
+
+### 全量文件变更
+- **重写**：`skill/knowledge-analyst/Skill.md` — 需求分析师（三拆 + 知识拆解 + 架构合约）
+- **重写**：`skill/project-expert/Skill.md` — order: 2 + 独立通报 + 合约迁移
+- **重写**：`skill/knowledge-educator/Skill.md` — order: 3 + 独立通报 + 合约迁移
+- **重写**：`skill/verifier/Skill.md` — order: 4 + 独立通报 + 合约迁移
+- **重写**：`skill/obsidian-doc-writer/Skill.md` — order: 5 + 模板/Schema 对照迁移 + 扩展规范
+- **重写**：`schemas/pipeline.config.yml` — 新增 order 字段
+- **弱化**：`Skill.md` — 242 行 → 46 行兼容性重定向
+- **更新**：`marketplace.json`、`CHANGELOG.md`
+
+### 版本号
+- 2.5.0 → 2.6.0
+
+---
+
+## v2.5.0 (2026-06-27)
+
+### 插件入口标准化
+- **重构入口**：`Skill.md` 从混合型大文件重构为干净插件入口，YAML frontmatter 精简至仅含 `name`/`description`/`version`
+- **Pipeline 规则抽离**：将 `config` 与 `pipeline` 定义从 `Skill.md` YAML frontmatter 中抽离至 `schemas/pipeline.config.yml`
+- **启动流程**：编排器启动时解析 `schemas/pipeline.config.yml` 获取流水线定义，与编排器角色逻辑解耦
+
+### 目录架构平级化
+- **`schemas/`**、**`skill/`**、**`templates/`** 调整为项目根目录下的平级目录
+- 全局路径引用更新：`skill/schemas/` → `schemas/`、`skill/templates/` → `templates/`
+- 影响文件：Skill.md、knowledge-analyst/Skill.md、project-expert/Skill.md、knowledge-educator/Skill.md、obsidian-doc-writer/Skill.md、CHANGELOG.md
+
+### 编排器文档精简
+- Skill.md 从 420 行精简至 ~240 行，去除冗余内嵌 Pipeline YAML
+- 执行流程精简为要点式指令，5个阶段统一为紧凑格式
+
+### 版本号
+- 2.4.0 → 2.5.0
+
+---
+
+## v2.4.0 (2026-06-27)
+
+### 插件架构重构：两层分层设计
+- **核心变革**：将原有单一Pipeline重构为「层1：数据生产」+「层2：文档渲染」两层架构
+- **层1 — 业务Skill**：知识分析师、项目专家、教学专家、闭环校验器**仅产出结构化JSON数据**，不再负责任何Markdown文档生成
+- **层2 — Obsidian文档编写助手**：新增统一文档生成模块，读取全部JSON + 标准化模板 → 渲染全部Markdown文档
+- **职责分离原则**：业务逻辑与文档呈现完全解耦，层1专注数据质量，层2专注格式合规与内容丰富化
+
+### 新Skill：Obsidian文档编写助手
+- **新建**：`skill/obsidian-doc-writer/Skill.md` — 原 `obsidian-syntax-validator` 升级为统一文档生成模块
+- **功能**：模板驱动文档生成 + Obsidian语法校验与自动修正（规则组A-H）+ 内容丰富化
+- **输入**：全部4个JSON中间件 + 5个标准化模板
+- **输出**：全部5个用户交付文档（0-体系总索引/1-领域知识点清单/2-项目集/3-领域知识教学指南/4-进度追踪看板）+ 语法校验报告
+
+### 标准化模板系统
+- **新建**：`skill/templates/` 目录，包含5个标准化文档模板
+- `knowledge-checklist.template.md` — 知识点清单模板
+- `project-collection.template.md` — 项目集模板
+- `teaching-guide.template.md` — 教学指南模板
+- `master-index.template.md` — 体系总索引模板
+- `progress-tracker.template.md` — 进度追踪看板模板
+- **占位符语法**：`{{VARIABLE}}` + `{{#EACH}}...{{/EACH}}` 迭代 + `{{#IF}}...{{/IF}}` 条件渲染
+
+### 新增JSON Schema
+- **新建**：`skill/schemas/verification_result.schema.json` — 闭环校验器输出数据结构定义
+
+### 业务Skill重构（仅产出JSON）
+- **重构**：`skill/knowledge-analyst/Skill.md` — 移除Markdown产出逻辑，仅输出 `knowledge_graph.json`
+- **重构**：`skill/project-expert/Skill.md` — 移除Markdown产出逻辑，仅输出 `project_manifest.json`
+- **重构**：`skill/knowledge-educator/Skill.md` — 移除Markdown产出逻辑，仅输出 `teaching_outline.json`
+- **重构**：`skill/verifier/Skill.md` — 移除Markdown产出逻辑，仅输出 `verification_result.json`（含校验结果、Mermaid图谱、映射表、引用索引、学习路径、进度跟踪数据）
+
+### 根入口优化
+- **重构**：`Skill.md` — 插件化设计优化，明确两层架构、Pipeline路径更新为 `skill/` 目录、职责分离规范、模板/Schema对照表
+
+### 清理
+- **移除**：`skill/obsidian-syntax-validator/` 目录（功能已整合至 obsidian-doc-writer）
+- **更新**：`marketplace.json`、`CHANGELOG.md` 版本号同步至 2.4.0
+
+---
+
 ## v2.3.0 (2026-06-26)
 
 ### 多领域独立存储机制

@@ -1,0 +1,232 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://knowledge-engine-orchestrator/schemas/verification_result.json",
+  "title": "Verification Result",
+  "description": "闭环校验器产出的校验结果结构化数据。由 step-verify 生成，供 Obsidian文档编写助手 消费以生成 0-体系总索引.md 和 4-进度追踪看板.md。",
+  "type": "object",
+  "required": ["domain", "engine_version", "verification_summary", "mermaid_graph", "mappings_table", "reference_index", "learning_path", "progress_tracker"],
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "领域名称"
+    },
+    "engine_version": {
+      "type": "string",
+      "description": "引擎版本号"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "生成时间戳 ISO 8601"
+    },
+    "verification_summary": {
+      "type": "object",
+      "required": ["coverage", "link_validity", "dependency_closure", "overall_passed"],
+      "properties": {
+        "coverage": {
+          "type": "object",
+          "required": ["status", "rate", "total_knowledge_points", "mapped_count", "missing_count"],
+          "properties": {
+            "status": { "type": "string", "enum": ["passed", "failed"] },
+            "rate": { "type": "number", "minimum": 0, "maximum": 100 },
+            "total_knowledge_points": { "type": "integer", "minimum": 0 },
+            "mapped_count": { "type": "integer", "minimum": 0 },
+            "missing_count": { "type": "integer", "minimum": 0 },
+            "missing_knowledge_points": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "name"],
+                "properties": {
+                  "id": { "type": "string", "pattern": "^[A-Z]{2,5}-\\d{3}$" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "link_validity": {
+          "type": "object",
+          "required": ["status", "dead_link_count"],
+          "properties": {
+            "status": { "type": "string", "enum": ["passed", "failed"] },
+            "dead_link_count": { "type": "integer", "minimum": 0 },
+            "dead_links": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["target", "source", "source_unit"],
+                "properties": {
+                  "target": { "type": "string", "description": "死链目标ID" },
+                  "source": { "type": "string", "description": "引用来源文件" },
+                  "source_unit": { "type": "string", "description": "引用来源单元" }
+                }
+              }
+            }
+          }
+        },
+        "dependency_closure": {
+          "type": "object",
+          "required": ["status"],
+          "properties": {
+            "status": { "type": "string", "enum": ["passed", "warning"] },
+            "issues": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type", "detail"],
+                "properties": {
+                  "type": { "type": "string", "enum": ["circular", "dangling", "cross_level"] },
+                  "detail": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "overall_passed": {
+          "type": "boolean",
+          "description": "全部校验是否通过（所有单项均为 passed 时为 true）"
+        }
+      }
+    },
+    "mermaid_graph": {
+      "type": "string",
+      "description": "Mermaid flowchart TD 代码（纯文本，不含```包裹），基于 knowledge_graph.json 的依赖关系生成。节点按难度着色。"
+    },
+    "mappings_table": {
+      "type": "array",
+      "minItems": 1,
+      "description": "知识点-项目映射表数据",
+      "items": {
+        "type": "object",
+        "required": ["knowledge_id", "knowledge_name", "project_id", "project_name", "application_step", "proficiency_requirement"],
+        "properties": {
+          "knowledge_id": { "type": "string", "pattern": "^[A-Z]{2,5}-\\d{3}$" },
+          "knowledge_name": { "type": "string" },
+          "project_id": { "type": "string", "pattern": "^Proj-\\d{3}$" },
+          "project_name": { "type": "string" },
+          "application_step": { "type": "string" },
+          "proficiency_requirement": { "type": "string", "enum": ["了解", "理解", "熟练应用"] }
+        }
+      }
+    },
+    "reference_index": {
+      "type": "array",
+      "minItems": 1,
+      "description": "全量知识点引用索引",
+      "items": {
+        "type": "object",
+        "required": ["knowledge_id", "knowledge_name", "difficulty", "in_checklist", "project_links", "teaching_units"],
+        "properties": {
+          "knowledge_id": { "type": "string", "pattern": "^[A-Z]{2,5}-\\d{3}$" },
+          "knowledge_name": { "type": "string" },
+          "difficulty": { "type": "string", "enum": ["入门级", "进阶级", "高级"] },
+          "in_checklist": { "type": "boolean" },
+          "project_links": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^Proj-\\d{3}$" }
+          },
+          "teaching_units": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^EDU-\\d{3}$" }
+          }
+        }
+      }
+    },
+    "learning_path": {
+      "type": "object",
+      "required": ["phase_1", "phase_2", "phase_3"],
+      "properties": {
+        "phase_1": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "edu_id", "edu_name", "project_id", "project_name"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 1 },
+              "edu_id": { "type": "string", "pattern": "^EDU-\\d{3}$" },
+              "edu_name": { "type": "string" },
+              "project_id": { "type": "string", "pattern": "^Proj-\\d{3}$" },
+              "project_name": { "type": "string" }
+            }
+          }
+        },
+        "phase_2": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "edu_id", "edu_name", "project_id", "project_name"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 1 },
+              "edu_id": { "type": "string", "pattern": "^EDU-\\d{3}$" },
+              "edu_name": { "type": "string" },
+              "project_id": { "type": "string", "pattern": "^Proj-\\d{3}$" },
+              "project_name": { "type": "string" }
+            }
+          }
+        },
+        "phase_3": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "edu_id", "edu_name", "project_id", "project_name"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 1 },
+              "edu_id": { "type": "string", "pattern": "^EDU-\\d{3}$" },
+              "edu_name": { "type": "string" },
+              "project_id": { "type": "string", "pattern": "^Proj-\\d{3}$" },
+              "project_name": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "progress_tracker": {
+      "type": "object",
+      "required": ["total_knowledge_points", "knowledge_points", "projects", "teaching_units"],
+      "properties": {
+        "total_knowledge_points": { "type": "integer" },
+        "knowledge_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "difficulty", "project_links", "teaching_links"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[A-Z]{2,5}-\\d{3}$" },
+              "name": { "type": "string" },
+              "difficulty": { "type": "string", "enum": ["入门级", "进阶级", "高级"] },
+              "project_links": { "type": "array", "items": { "type": "string" } },
+              "teaching_links": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "difficulty", "kp_count"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^Proj-\\d{3}$" },
+              "name": { "type": "string" },
+              "difficulty": { "type": "string" },
+              "kp_count": { "type": "integer" }
+            }
+          }
+        },
+        "teaching_units": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "difficulty", "project_links"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^EDU-\\d{3}$" },
+              "name": { "type": "string" },
+              "difficulty": { "type": "string" },
+              "project_links": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

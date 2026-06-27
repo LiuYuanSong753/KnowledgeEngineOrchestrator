@@ -1,0 +1,151 @@
+# ================================================================
+# Pipeline 流水线配置 v2.7
+# 知识体系构建引擎 — Skill 运行规则定义
+#
+# 架构变更 (v2.7):
+#   - 新增 step-requirements（需求分析师）作为 order: 1 插件入口
+#   - 原知识分析师回归纯知识拆解角色（order: 2）
+#   - 所有步骤 order 后移一位，总计 6 个核心步骤
+#   - 各 Skill 独立通报执行状态 [N/6]
+# ================================================================
+
+# ----------------------------------------------------------------
+# 用户可配置参数（默认值，可被需求分析师阶段三覆盖）
+# ----------------------------------------------------------------
+config:
+  # 知识拆分粒度：G1(概念级) / G2(原理级) / G3(代码实践级) / G4(完整案例级)
+  granularity: G3
+  # 生成深度：D1(概述) / D2(标准) / D3(深钻)
+  depth: D2
+  # 知识点数量上限（范围 5~50）
+  max_knowledge_points: 20
+  # 风格预设：标准系统型 / 面试突击型 / 项目驱动型 / 学术严谨型 / 科普故事型
+  style_profile: 标准系统型
+  # 生成语言：zh-CN / en / bilingual
+  output_language: zh-CN
+  # 是否生成进度追踪看板
+  enable_tracker: true
+
+# ----------------------------------------------------------------
+# Pipeline 步骤定义
+# 层1（order:1-5）: 业务Skill，仅产出 JSON
+# 层2（order:6）:  Obsidian文档编写助手，模板渲染全部 Markdown
+#
+# order: 执行顺序编号（1-based）
+# depends_on: 数据依赖（需等待前置步骤的 outputs_shared 产物就绪）
+# ----------------------------------------------------------------
+pipeline:
+  # --------------------------------------------------------------
+  # order: 1 — 需求分析师（新增 · 插件入口）
+  # 三阶段交互：三拆范围界定 → 学习者画像 → 生成规格配置
+  # --------------------------------------------------------------
+  - id: step-requirements
+    order: 1
+    agent: skill/requirements-analyst/Skill.md
+    depends_on: []
+    input_source: "用户输入的学习内容描述"
+    outputs_shared:
+      - "领域知识库/[领域名称]/.shared/requirements_profile.json"
+    outputs_markdown: []
+    enabled: true
+    checkpoint: true
+
+  # --------------------------------------------------------------
+  # order: 2 — 知识分析师
+  # 读取 requirements_profile.json，执行体系化知识拆解
+  # --------------------------------------------------------------
+  - id: step-analyze
+    order: 2
+    agent: skill/knowledge-analyst/Skill.md
+    depends_on: [step-requirements]
+    input_source: "领域知识库/[领域名称]/.shared/requirements_profile.json"
+    outputs_shared:
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+    outputs_markdown: []
+    enabled: true
+    checkpoint: true
+
+  # --------------------------------------------------------------
+  # order: 3 — 项目专家
+  # --------------------------------------------------------------
+  - id: step-project
+    order: 3
+    agent: skill/project-expert/Skill.md
+    depends_on: [step-analyze]
+    input_source: "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+    outputs_shared:
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
+    outputs_markdown: []
+    enabled: true
+    checkpoint: true
+
+  # --------------------------------------------------------------
+  # order: 4 — 知识教学专家
+  # --------------------------------------------------------------
+  - id: step-teach
+    order: 4
+    agent: skill/knowledge-educator/Skill.md
+    depends_on: [step-analyze, step-project]
+    input_source:
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
+    outputs_shared:
+      - "领域知识库/[领域名称]/.shared/teaching_outline.json"
+    outputs_markdown: []
+    enabled: true
+    checkpoint: true
+
+  # --------------------------------------------------------------
+  # order: 5 — 闭环校验器
+  # --------------------------------------------------------------
+  - id: step-verify
+    order: 5
+    agent: skill/verifier/Skill.md
+    depends_on: [step-analyze, step-project, step-teach]
+    input_source:
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
+      - "领域知识库/[领域名称]/.shared/teaching_outline.json"
+    outputs_shared:
+      - "领域知识库/[领域名称]/.shared/verification_result.json"
+    outputs_markdown: []
+    enabled: true
+    checkpoint: true
+
+  # --------------------------------------------------------------
+  # order: 6 — Obsidian文档编写助手
+  # --------------------------------------------------------------
+  - id: step-doc-gen
+    order: 6
+    agent: skill/obsidian-doc-writer/Skill.md
+    depends_on: [step-analyze, step-project, step-teach, step-verify]
+    input_source:
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
+      - "领域知识库/[领域名称]/.shared/teaching_outline.json"
+      - "领域知识库/[领域名称]/.shared/verification_result.json"
+    outputs_markdown:
+      - "领域知识库/[领域名称]/0-体系总索引.md"
+      - "领域知识库/[领域名称]/1-领域知识点清单.md"
+      - "领域知识库/[领域名称]/2-项目集.md"
+      - "领域知识库/[领域名称]/3-领域知识教学指南.md"
+      - "领域知识库/[领域名称]/4-进度追踪看板.md"
+    outputs_shared:
+      - "领域知识库/[领域名称]/.shared/syntax_check_report.md"
+    enabled: true
+    checkpoint: false
+
+  # --------------------------------------------------------------
+  # [可选] order: 7 — 自测题库生成（默认关闭）
+  # --------------------------------------------------------------
+  - id: step-assessment
+    order: 7
+    agent: skill/assessment-generator/Skill.md
+    depends_on: [step-analyze, step-project]
+    input_source:
+      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
+      - "领域知识库/[领域名称]/.shared/project_manifest.json"
+    outputs_markdown:
+      - "领域知识库/[领域名称]/5-自测题库.md"
+    enabled: false
+    checkpoint: true
