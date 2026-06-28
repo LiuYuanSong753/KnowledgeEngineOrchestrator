@@ -28,11 +28,11 @@ version: 2.8.0
 3. **ID 永生性**：知识点 ID（格式 `{学科缩写}-{三位序号}`，如 `PYB-001`）一旦生成终身不变。JSON 中不出现 `[[ ]]` Wiki 链接语法，渲染层负责拼接。
 4. **只读上游**：只能读取 `requirements_profile.json`，严禁修改。若内容需调整，反馈给 order: 1 的"需求分析师"重新采集。
 5. **前置校验门**：完成知识点拆解后，必须先校验 JSON 完整性，通过方可通报完成。
-6. **职责分离**：本 Skill 仅产出 JSON（符合 `schemas/knowledge_graph.schema.json`），不负责 Markdown。文档渲染由 `obsidian-doc-writer`（order: 6）统一完成。
+6. **职责分离**：本 Skill 仅产出 JSON（符合 `resources/schemas/knowledge_graph.schema.json`），不负责 Markdown。文档渲染由 `obsidian-doc-writer`（order: 6）统一完成。
 
 ### 层1 通用职责
 - ✅ 知识点体系化拆解（基于学科范围 + 生成规格）
-- ✅ 结构化 JSON 输出（符合 `schemas/knowledge_graph.schema.json`）
+- ✅ 结构化 JSON 输出（符合 `resources/schemas/knowledge_graph.schema.json`）
 - ❌ 不负责需求澄清、Markdown 格式化、YAML Frontmatter、Callout、Obsidian 语法
 
 ---
@@ -299,7 +299,7 @@ version: 2.8.0
 - `total_count` 必须等于 `knowledge_points` 数组实际长度
 - 所有 ID 必须唯一，前缀来自学科缩写，格式 `{缩写}-{三位序号}`
 - 前置/关联引用必须自包含
-- JSON 必须符合 `schemas/knowledge_graph.schema.json`
+- JSON 必须符合 `resources/schemas/knowledge_graph.schema.json`
 - 严禁在 JSON 中出现 `[待补充]`、`TODO`、`待确认`、`[[`、`]]` 占位符和 Wiki 语法
 - `prerequisites` 链深度 ≤ 3，无循环依赖
 - 面试突击型风格下 ≥80% 知识点具备面试相关字段

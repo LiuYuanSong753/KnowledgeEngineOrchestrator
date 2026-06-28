@@ -1,8 +1,9 @@
 # ================================================================
-# Pipeline 流水线配置 v2.8
-# 知识体系构建引擎 — Skill 运行规则定义
+# Pipeline 流水线配置 v2.9
+# 知识体系构建引擎 — Agent 运行规则定义
 #
-# 架构变更 (v2.8):
+# 架构变更 (v2.9):
+#   - Phase B 结构扁平化：skill/ → agents/，schemas+templates → resources/
 #   - 三核心Skill（知识分析师/项目专家/知识教学专家）全面优化
 #   - 输入校验门、风格深度适配、内容质量自动化
 #   - Schema 与 Template 同步更新至 v2.8 结构
@@ -46,7 +47,7 @@ pipeline:
   # --------------------------------------------------------------
   - id: step-requirements
     order: 1
-    agent: skill/requirements-analyst/Skill.md
+    agent: agents/requirements-analyst.md
     depends_on: []
     input_source: "用户输入的学习内容描述"
     outputs_shared:
@@ -61,7 +62,7 @@ pipeline:
   # --------------------------------------------------------------
   - id: step-analyze
     order: 2
-    agent: skill/knowledge-analyst/Skill.md
+    agent: agents/knowledge-analyst.md
     depends_on: [step-requirements]
     input_source: "领域知识库/[领域名称]/.shared/requirements_profile.json"
     outputs_shared:
@@ -75,7 +76,7 @@ pipeline:
   # --------------------------------------------------------------
   - id: step-project
     order: 3
-    agent: skill/project-expert/Skill.md
+    agent: agents/project-expert.md
     depends_on: [step-analyze]
     input_source: "领域知识库/[领域名称]/.shared/knowledge_graph.json"
     outputs_shared:
@@ -89,7 +90,7 @@ pipeline:
   # --------------------------------------------------------------
   - id: step-teach
     order: 4
-    agent: skill/knowledge-educator/Skill.md
+    agent: agents/knowledge-educator.md
     depends_on: [step-analyze, step-project]
     input_source:
       - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
@@ -105,7 +106,7 @@ pipeline:
   # --------------------------------------------------------------
   - id: step-verify
     order: 5
-    agent: skill/verifier/Skill.md
+    agent: agents/verifier.md
     depends_on: [step-analyze, step-project, step-teach]
     input_source:
       - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
@@ -122,7 +123,7 @@ pipeline:
   # --------------------------------------------------------------
   - id: step-doc-gen
     order: 6
-    agent: skill/obsidian-doc-writer/Skill.md
+    agent: agents/obsidian-doc-writer.md
     depends_on: [step-analyze, step-project, step-teach, step-verify]
     input_source:
       - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
@@ -141,16 +142,5 @@ pipeline:
     checkpoint: false
 
   # --------------------------------------------------------------
-  # [可选] order: 7 — 自测题库生成（默认关闭）
+  # [已移除] order: 7 — 自测题库生成（assessment-generator 尚未实现）
   # --------------------------------------------------------------
-  - id: step-assessment
-    order: 7
-    agent: skill/assessment-generator/Skill.md
-    depends_on: [step-analyze, step-project]
-    input_source:
-      - "领域知识库/[领域名称]/.shared/knowledge_graph.json"
-      - "领域知识库/[领域名称]/.shared/project_manifest.json"
-    outputs_markdown:
-      - "领域知识库/[领域名称]/5-自测题库.md"
-    enabled: false
-    checkpoint: true

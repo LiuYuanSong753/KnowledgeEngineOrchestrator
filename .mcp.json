@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/mcp-server-filesystem",
+        "./"
+      ],
+      "env": {
+        "ALLOWED_DIRECTORIES": "领域知识库/,knowledge-bases/,resources/"
+      },
+      "description": "MCP文件系统服务，供 Agent 读写知识库 JSON 和 Markdown 文件"
+    }
+  },
+  "description": "Knowledge Engine Orchestrator MCP 配置。提供 Agent 直接读写文件系统能力，取代纯 LLM '模拟'。",
+  "version": "2.9.0"
+}

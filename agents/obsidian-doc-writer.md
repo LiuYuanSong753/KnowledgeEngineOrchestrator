@@ -15,14 +15,14 @@ version: 2.8.0
 ### 运行契约
 1. **顺序依赖**：必须等待全部四个 JSON（`knowledge_graph.json`、`project_manifest.json`、`teaching_outline.json`、`verification_result.json`）就绪。
 2. **只读上游**：只能读取 JSON，严禁修改。若内容需调整，反馈给对应 order 的 Skill 重新执行。
-3. **模板驱动**：基于 `templates/*.template.md` 渲染，不得自行决定文档结构。
+3. **模板驱动**：基于 `resources/templates/*.template.md` 渲染，不得自行决定文档结构。
 4. **语法强制合规**：全部产出文档必须通过 Obsidian 语法规则库 A-H 的完整校验，🔴 严重问题零容忍。
 5. **内容丰富化**：自动添加 YAML Frontmatter、Callout 标注、标签、交叉引用。
 6. **标题纯文本规约**：`##` / `###` 标题必须为纯文本，严禁嵌入 wikilink。
 7. **表格内链接格式规约**：表格单元格内的双向链接必须使用 `[[file#anchor]]` 格式（不含 `|` 分隔符），避免与表格列分隔符冲突。
 
 ### 层2 职责
-- ✅ 基于 `templates/*.template.md` 渲染文档
+- ✅ 基于 `resources/templates/*.template.md` 渲染文档
 - ✅ 全部 Markdown 统一生成（0~4 共5个文件）
 - ✅ Obsidian 语法全量校验与自动修正（规则组 A-H）
 - ✅ 内容丰富化（Frontmatter、Callout、标签、交叉引用）
@@ -34,17 +34,17 @@ version: 2.8.0
 
 | 产出文档 | 数据源 JSON | 渲染模板 | 数据 Schema |
 |:---|:---|:---|:---|
-| 0-体系总索引.md | verification_result.json | templates/master-index.template.md | schemas/verification_result.schema.json |
-| 1-领域知识点清单.md | knowledge_graph.json | templates/knowledge-checklist.template.md | schemas/knowledge_graph.schema.json |
-| 2-项目集.md | project_manifest.json | templates/project-collection.template.md | schemas/project_manifest.schema.json |
-| 3-领域知识教学指南.md | teaching_outline.json | templates/teaching-guide.template.md | schemas/teaching_outline.schema.json |
-| 4-进度追踪看板.md | verification_result.json | templates/progress-tracker.template.md | schemas/verification_result.schema.json |
+| 0-体系总索引.md | verification_result.json | resources/templates/master-index.template.md | resources/schemas/verification_result.schema.json |
+| 1-领域知识点清单.md | knowledge_graph.json | resources/templates/knowledge-checklist.template.md | resources/schemas/knowledge_graph.schema.json |
+| 2-项目集.md | project_manifest.json | resources/templates/project-collection.template.md | resources/schemas/project_manifest.schema.json |
+| 3-领域知识教学指南.md | teaching_outline.json | resources/templates/teaching-guide.template.md | resources/schemas/teaching_outline.schema.json |
+| 4-进度追踪看板.md | verification_result.json | resources/templates/progress-tracker.template.md | resources/schemas/verification_result.schema.json |
 
 ---
 
 ## 输入
 1. **四个 JSON 数据源**：knowledge_graph.json / project_manifest.json / teaching_outline.json / verification_result.json
-2. **五个模板文件**：templates/*.template.md
+2. **五个模板文件**：resources/templates/*.template.md
 3. **参数**：`enable_tracker`（控制是否生成 4-进度追踪看板.md）
 
 ## 输出
@@ -125,11 +125,8 @@ version: 2.8.0
 
 | 模板文件 | 产出文档 |
 |:---|:---|
-| templates/knowledge-checklist.template.md | 1-领域知识点清单.md |
-| templates/project-collection.template.md | 2-项目集.md |
-| templates/teaching-guide.template.md | 3-领域知识教学指南.md |
-| templates/master-index.template.md | 0-体系总索引.md |
-| templates/progress-tracker.template.md | 4-进度追踪看板.md |
+| resources/templates/knowledge-checklist.template.md | 1-领域知识点清单.md |
+| resources/templates/project-collection.template.md | 2-项目集.md |
 
 ## 质量红线
 - 全部文档通过 Obsidian 语法校验，🔴 严重问题零容忍

@@ -4,6 +4,41 @@
 
 ---
 
+## v2.9.0 (2026-06-28)
+
+### Phase B: 结构扁平化迁移 + Phase C: 功能增强
+
+#### 结构重组 (Phase B)
+- **迁移**：`plugins/knowledge-engine-orchestrator/skill/` → `agents/`（6 个 Agent 定义，Skill.md 重命名为 agent-name.md）
+- **迁移**：`plugins/knowledge-engine-orchestrator/schemas/` → `resources/schemas/`
+- **迁移**：`plugins/knowledge-engine-orchestrator/templates/` → `resources/templates/`
+- **删除**：`plugins/` 目录（扁平化后无嵌套结构）
+- **更新**：`pipeline.config.yml` 全部 agent 路径（`skill/xxx/Skill.md` → `agents/xxx.md`）
+- **更新**：6 个 Agent 文件全部内部路径（`schemas/` → `resources/schemas/`，`templates/` → `resources/templates/`）
+- **更新**：`plugin.json` — agents/resources 路径
+- **更新**：`Skill.md` — 目录架构图、所有引用路径
+- **更新**：`marketplace.json` — source 路径
+- **修复**：移除 pipeline.config.yml 中 `step-assessment`（assessment-generator 尚未实现）
+
+#### 功能增强 (Phase C)
+- **新增**：`skills/schema-validator.md` — 可复用 JSON Schema 校验技能模块（8 种错误码，strict 模式）
+- **新增**：`.mcp.json` — MCP 文件系统服务定义，Agent 可读写知识库 JSON 和 Markdown
+- **新增**：`pipeline-runner.py` — Python Pipeline 编排器，支持 `--domain`、`--force`、`--dry-run`
+
+#### 修复
+- **修复**：pipeline.config.yml 版本号 v2.8 → v2.9
+- **修复**：移除死引用 `skill/assessment-generator/Skill.md`
+
+#### 文档
+- **更新**：`README.md` — 新目录架构（agents/resources/skills/.mcp.json/pipeline-runner.py 七层标注）
+- **更新**：`README-en.md` — 英文全量同步，新增 Python runner 使用说明
+- **更新**：`CHANGELOG.md` — 本条目
+
+### 版本号
+- 保持不变: 2.9.0
+
+---
+
 ## v2.8.0 (2026-06-27)
 
 ### 三核心 Skill 全面优化

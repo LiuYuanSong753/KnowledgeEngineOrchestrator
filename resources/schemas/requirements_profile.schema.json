@@ -62,6 +62,10 @@
         }
       }
     },
+    "content_hash": {
+      "type": "string",
+      "description": "全部输出字段 JSON 字符串的 SHA-256 值，供下游断点续跑"
+    },
     "generation_config": {
       "type": "object",
       "description": "生成规格配置",

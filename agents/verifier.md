@@ -17,7 +17,7 @@ version: 2.8.0
 2. **只读上游**：只能读取上游 JSON，严禁修改。
 3. **如实报告**：覆盖率未达 100% 时必须如实标注 `failed`，严禁虚假报告。
 4. **前置校验门**：完成校验后，必须先确认 `verification_result.json` 包含全部必需字段，通过方可通报完成。
-5. **职责分离**：本 Skill 仅产出 JSON（`schemas/verification_result.schema.json`），不负责 Markdown。文档渲染由 order: 6 统一完成。
+5. **职责分离**：本 Skill 仅产出 JSON（`resources/schemas/verification_result.schema.json`），不负责 Markdown。文档渲染由 order: 6 统一完成。
 
 ### 层1 通用职责
 - ✅ 数据完整性校验、覆盖率计算、依赖链分析、Mermaid 图谱生成、映射表构建、引用索引构建、学习路径推荐
@@ -52,7 +52,7 @@ version: 2.8.0
 ```json
 {
   "domain": "领域名称",
-  "engine_version": "2.6.0",
+  "engine_version": "2.8.0",
   "generated_at": "ISO 8601 时间戳",
   "verification_summary": {
     "coverage": {
@@ -132,5 +132,5 @@ version: 2.8.0
 ## 质量红线
 - 覆盖率不足时如实标注 `failed`，严禁虚假报告
 - 所有引用 ID 必须存在于对应数据集中
-- JSON 符合 `schemas/verification_result.schema.json`
+- JSON 符合 `resources/schemas/verification_result.schema.json`
 - 严禁占位符

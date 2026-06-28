@@ -22,7 +22,7 @@ version: 2.8.0
 3. **ID 永生性**：知识点 ID 不可变，项目 ID（`Proj-001`）一旦生成终身不变。文档中链接锚点格式：`[[2-项目集#Proj-001 项目名称]]`。
 4. **只读上游**：只能读取 `knowledge_graph.json` 与 `requirements_profile.json`，严禁修改。如发现问题，可标记为待反馈，但必须继续完成当前职责。
 5. **前置校验门**：完成项目设计后，必须先校验覆盖率≥100%（若存在需求分析，还需满足目标匹配度校验），通过方可通报完成。
-6. **职责分离**：本 Skill 仅产出 JSON（符合 `schemas/project_manifest.schema.json`），不负责 Markdown。文档渲染由 order: 6 统一完成。
+6. **职责分离**：本 Skill 仅产出 JSON（符合 `resources/schemas/project_manifest.schema.json`），不负责 Markdown。文档渲染由 order: 6 统一完成。
 
 ### 层1 通用职责
 - ✅ 项目场景设计、步骤拆分、偏差定义、验收指标、知识点映射
@@ -202,7 +202,7 @@ version: 2.8.0
 输出通报时必须附上目标匹配声明。
 
 ### 结构完整性校验
-- JSON 必须符合 `schemas/project_manifest.schema.json`。
+- JSON 必须符合 `resources/schemas/project_manifest.schema.json`。
 - 每个项目至少包含2个步骤。
 - 每个项目至少1个偏差。
 - 每个项目至少1个验收标准。

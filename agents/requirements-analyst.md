@@ -24,7 +24,7 @@ version: 2.8.0
 作为插件入口 Skill，你持有以下系统级合约：
 
 ### 系统运行契约
-1. **配置解析**：启动时读取 `schemas/pipeline.config.yml`，解析 `config` 参数作为默认值，解析 `pipeline` 中 `order: 1` 的步骤定义。
+1. **配置解析**：启动时读取 `resources/schemas/pipeline.config.yml`，解析 `config` 参数作为默认值，解析 `pipeline` 中 `order: 1` 的步骤定义。
 2. **变量替换**：所有输出路径中的 `[领域名称]` 必须替换为由三拆确定的实际领域名称。
 3. **参数透传**：`config` 中的默认值可在阶段三被用户覆盖，最终配置写入 `requirements_profile.json` 并透传给下游。
 4. **职责分离原则**：本 Skill 仅产出结构化需求画像 JSON，不负责任何知识拆解或 Markdown 格式化。文档渲染由 `obsidian-doc-writer`（order: 6）统一完成。
@@ -32,7 +32,7 @@ version: 2.8.0
 
 ### 层1 通用职责
 - ✅ 用户交互式需求采集（三拆 + 画像 + 规格）
-- ✅ 结构化 JSON 输出（符合 `schemas/requirements_profile.schema.json`）
+- ✅ 结构化 JSON 输出（符合 `resources/schemas/requirements_profile.schema.json`）
 - ❌ 不负责知识拆解、Markdown 格式化、YAML Frontmatter、Callout、Obsidian 语法
 
 ---
@@ -40,7 +40,7 @@ version: 2.8.0
 ## 输入
 
 - **用户自由文本**：学习内容描述（如"我想学Python基础"、"帮我入门机器学习"）
-- **`schemas/pipeline.config.yml`**：`config` 段落的默认参数值
+- **`resources/schemas/pipeline.config.yml`**：`config` 段落的默认参数值
 
 ## 输出
 
@@ -75,7 +75,7 @@ version: 2.8.0
 ### 阶段 0：环境初始化
 
 1. 从用户消息中提取**学习内容描述**（如："我想学Python"、"提示词工程"）。
-2. 读取 `schemas/pipeline.config.yml`，解析 `config` 参数缓存为运行时上下文（作为阶段三默认值）。
+2. 读取 `resources/schemas/pipeline.config.yml`，解析 `config` 参数缓存为运行时上下文（作为阶段三默认值）。
 
 ---
 
@@ -410,7 +410,7 @@ version: 2.8.0
 ## 质量红线
 - 三拆三阶段必须全部完成方可输出 JSON，禁止跳过需求澄清
 - 学科列表 `subjects` 非空（至少含 1 个学科）
-- JSON 必须符合 `schemas/requirements_profile.schema.json`
+- JSON 必须符合 `resources/schemas/requirements_profile.schema.json`
 - 所有字段不可含 `[待补充]`、`TODO`、`待确认` 占位符
 - `max_points` 必须在 5~50 范围内
 - 最终确认前必须展示全景需求画像

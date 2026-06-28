@@ -1,0 +1,39 @@
+{
+  "name": "knowledge-engine-orchestrator",
+  "version": "2.9.0",
+  "description": "知识体系构建引擎-分布式编排器。输入学习方向 → 需求分析师三拆锁定范围 → 六Agent按order自动串联 → 产出永久联动的 Obsidian 双链知识库。",
+  "author": "LiuYuanSong753",
+  "license": "MIT",
+  "entry": "Skill.md",
+  "agents": [
+    "agents/requirements-analyst.md",
+    "agents/knowledge-analyst.md",
+    "agents/project-expert.md",
+    "agents/knowledge-educator.md",
+    "agents/verifier.md",
+    "agents/obsidian-doc-writer.md"
+  ],
+  "commands": [
+    "commands/analyze-knowledge.md",
+    "commands/knowledge-status.md",
+    "commands/force-regenerate.md"
+  ],
+  "hooks": "hooks/hooks.json",
+  "resources": {
+    "schemas": "resources/schemas/",
+    "templates": "resources/templates/"
+  },
+  "keywords": [
+    "knowledge-graph",
+    "obsidian",
+    "education",
+    "learning",
+    "pipeline",
+    "orchestrator",
+    "知识图谱",
+    "教学",
+    "学习路径"
+  ],
+  "category": "education",
+  "minimum_claude_version": "2.0.0"
+}

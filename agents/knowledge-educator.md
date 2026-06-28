@@ -21,7 +21,7 @@ version: 2.8.0
 2. **ID 永生性**：教学单元 ID（`EDU-001`）一旦生成终身不变。文档中链接锚点格式：`[[3-领域知识教学指南#EDU-001 单元名称]]`。
 3. **只读上游**：只能读取上游 JSON，严禁修改。
 4. **前置校验门**：完成教学单元设计后，必须先校验全部知识点 ID 被覆盖、内容质量达标，通过方可通报完成。
-5. **职责分离**：本 Skill 仅产出 JSON（符合 `schemas/teaching_outline.schema.json`），不负责 Markdown。文档渲染由 order: 6 统一完成。
+5. **职责分离**：本 Skill 仅产出 JSON（符合 `resources/schemas/teaching_outline.schema.json`），不负责 Markdown。文档渲染由 order: 6 统一完成。
 6. **标题纯文本规约**：教学单元标题必须为纯文本，严禁嵌入 `[[ ]]` wikilink。
 
 ### 层1 通用职责
@@ -179,7 +179,7 @@ version: 2.8.0
 全部通过方可通报完成：
 
 ### 结构校验
-1. ✅ JSON 符合 `schemas/teaching_outline.schema.json`。
+1. ✅ JSON 符合 `resources/schemas/teaching_outline.schema.json`。
 
 ### 知识点覆盖与唯一性校验
 2. ✅ 各单元 `knowledge_ids` 并集 = `knowledge_graph.json` 全部知识点 ID。
@@ -227,7 +227,7 @@ version: 2.8.0
 
 ## 质量红线
 
-- 知识点覆盖 100%，JSON 符合 `schemas/teaching_outline.schema.json`
+- 知识点覆盖 100%，JSON 符合 `resources/schemas/teaching_outline.schema.json`
 - 难度自适应篇幅配比严格执行
 - 启发式问题严禁含答案（含答案仅警告不阻塞）
 - 实战钩子精确到步骤编号

@@ -1,8 +1,8 @@
-# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.8
+# 🧠 知识引擎编排器（Knowledge Engine Orchestrator）v2.9
 
 **中文** | [English](./README-en.md)
 
-> **一句话定义**：输入学习方向 → 需求分析师三拆锁定范围 → 六Skill按order自动串联 → 产出永久联动的 Obsidian 双链知识库。v2.8 三大Skill（知识分析师/项目专家/知识教学专家）全面优化，强化数据规范、风格定制与质量自动化。
+> **一句话定义**：输入学习方向 → 需求分析师三拆锁定范围 → 六Skill按order自动串联 → 产出永久联动的 Obsidian 双链知识库。v2.9 完成 Claude Code Plugin 架构标准化，新增斜杠命令、事件钩子与插件清单。
 
 ---
 
@@ -79,8 +79,9 @@ flowchart TD
     K -->|语法校验| M[.shared/syntax_check_report.md]
 ```
 
-> **v2.8 架构要点**：
-> - **插件入口**为 `plugins/knowledge-engine-orchestrator/skill/requirements-analyst`（需求分析师），先通过三阶段交互精准锁定学习范围与生成规格
+> **v2.9 架构要点**：
+> - **插件入口**为 `Skill.md`（根入口）→ `agents/requirements-analyst.md`（需求分析师），先通过三阶段交互精准锁定学习范围与生成规格
+> - **标准化对齐**：`agents/`（Agent）+ `resources/`（Schemas + Templates）+ `commands/`（斜杠命令）+ `hooks/`（事件钩子）+ `.mcp.json`（MCP 服务）+ `pipeline-runner.py`（Python 编排器）
 > - **知识分析师**（order:2）：基于学科缩写生成知识点 ID，支持跨学科依赖、面试星级/学术引用/场景标记等风格字段，含输入校验门与可行性估算
 > - **项目专家**（order:3）：情境驱动设计，根据学习者画像调整项目背景与难度，支持目标匹配度自检与负荷控制
 > - **知识教学专家**（order:4）：可执行打包算法（聚类+耦合+联动判断），归属唯一性约束，5 风格深度适配，内容自动校验，孤儿知识点处理
@@ -92,45 +93,53 @@ flowchart TD
 
 ```text
 ./
-├── plugins/
-│   └── knowledge-engine-orchestrator/
-│       ├── skill/                            ← 【执行层】6 个独立 Skill
-│       │   ├── requirements-analyst/Skill.md     ← [order:1] 需求分析师（插件入口）
-│       │   ├── knowledge-analyst/Skill.md        ← [order:2] 知识分析师
-│       │   ├── project-expert/Skill.md           ← [order:3] 项目专家
-│       │   ├── knowledge-educator/Skill.md       ← [order:4] 知识教学专家
-│       │   ├── verifier/Skill.md                 ← [order:5] 闭环校验器
-│       │   └── obsidian-doc-writer/Skill.md      ← [order:6] Obsidian文档编写助手
-│       │
-│       ├── schemas/                          ← 【规则层】Pipeline 配置 + JSON Schema
-│       │   ├── pipeline.config.yml               ← order 顺序 + 运行规则
-│       │   ├── requirements_profile.schema.json  ← 需求配置数据契约
-│       │   ├── knowledge_graph.schema.json       ← v2.8 知识点数据结构
-│       │   ├── project_manifest.schema.json      ← v2.8 项目映射数据结构
-│       │   ├── teaching_outline.schema.json      ← v2.8 教学大纲数据结构
-│       │   └── verification_result.schema.json   ← 校验结果数据结构
-│       │
-│       └── templates/                        ← 【模板层】5 个标准化文档模板
-│           ├── knowledge-checklist.template.md
-│           ├── project-collection.template.md
-│           ├── teaching-guide.template.md
-│           ├── master-index.template.md
-│           └── progress-tracker.template.md
-│
-└── 领域知识库/                           ← 【产出层】用户可见的最终知识资产
-    └── [领域名称]/
-        ├── .shared/                      ← 标准化 JSON 中间件（独立存储）
-        │   ├── requirements_profile.json
-        │   ├── knowledge_graph.json
-        │   ├── project_manifest.json
-        │   ├── teaching_outline.json
-        │   ├── verification_result.json
-        │   └── syntax_check_report.md    ← 内部语法校验报告
-        ├── 0-体系总索引.md
-        ├── 1-领域知识点清单.md
-        ├── 2-项目集.md
-        ├── 3-领域知识教学指南.md
-        └── 4-进度追踪看板.md
+├── .claude-plugin/
+│   ├── plugin.json                          ← 【清单层】插件运行时清单（必需）
+│   └── marketplace.json                     ← 【清单层】市场发现描述
+├── Skill.md                                 ← 【入口层】插件根入口文件
+├── agents/                                  ← 【执行层】6 个独立 Agent 定义
+│   ├── requirements-analyst.md                  ← [order:1] 需求分析师（插件入口）
+│   ├── knowledge-analyst.md                     ← [order:2] 知识分析师
+│   ├── project-expert.md                        ← [order:3] 项目专家
+│   ├── knowledge-educator.md                    ← [order:4] 知识教学专家
+│   ├── verifier.md                              ← [order:5] 闭环校验器
+│   └── obsidian-doc-writer.md                   ← [order:6] Obsidian文档编写助手
+├── skills/                                  ← 【工具层】可复用技能模块
+│   └── schema-validator.md
+├── resources/                               ← 【资源层】共享配置与模板
+│   ├── schemas/                                 ← Pipeline 配置 + JSON Schema
+│   │   ├── pipeline.config.yml                      ← order 顺序 + 运行规则
+│   │   ├── requirements_profile.schema.json         ← 需求配置数据契约
+│   │   ├── knowledge_graph.schema.json              ← v2.8 知识点数据结构
+│   │   ├── project_manifest.schema.json             ← v2.8 项目映射数据结构
+│   │   ├── teaching_outline.schema.json             ← v2.8 教学大纲数据结构
+│   │   └── verification_result.schema.json          ← 校验结果数据结构
+│   └── templates/                               ← 5 个标准化文档模板
+│       ├── knowledge-checklist.template.md
+│       ├── project-collection.template.md
+│       ├── teaching-guide.template.md
+│       ├── master-index.template.md
+│       └── progress-tracker.template.md
+├── commands/                                ← 【命令层】斜杠命令定义
+│   ├── analyze-knowledge.md                     ← /analyze-knowledge 触发 Pipeline
+│   ├── knowledge-status.md                      ← /knowledge-status 查看缓存
+│   └── force-regenerate.md                      ← /force-regenerate 强制重跑
+├── hooks/
+│   └── hooks.json                           ← 【事件层】事件触发器配置
+├── .mcp.json                                ← 【集成层】MCP 服务定义
+├── pipeline-runner.py                       ← 【编排层】Python Pipeline 编排器
+├── README.md
+├── README-en.md
+└── CHANGELOG.md
+
+领域知识库/                           ← 【产出层】用户可见的最终知识资产
+└── [领域名称]/
+    ├── .shared/                      ← 标准化 JSON 中间件（独立存储）
+    ├── 0-体系总索引.md
+    ├── 1-领域知识点清单.md
+    ├── 2-项目集.md
+    ├── 3-领域知识教学指南.md
+    └── 4-进度追踪看板.md
 ```
 
 ---
@@ -139,18 +148,30 @@ flowchart TD
 
 ### Step 1：环境准备
 
-- 一个支持 Markdown 渲染的 AI 客户端（如 Obsidian + Copilot 插件）。
+- 将本插件安装到 Claude Code 插件管理目录。
+- 安装 Python 依赖（可选）：`pip install pyyaml`（用于 pipeline-runner.py）。
 - 推荐使用 **Obsidian** 以获得最佳双链跳转体验。
 
-### Step 2：安装插件
+### Step 2：触发运行
 
-将本仓库所有文件复制到你的插件管理目录。
-
-### Step 3：触发运行
-
-在你的 AI 对话中输入：
+#### 方式一：自然语言
 
 > **"请使用需求分析师分析『提示词工程』"**
+
+#### 方式二：斜杠命令（推荐）
+
+```
+/analyze-knowledge 提示词工程
+/analyze-knowledge "Python数据分析" --granularity=G3 --depth=D2 --style=面试突击型
+```
+
+#### 方式三：Python 编排器
+
+```bash
+python pipeline-runner.py --domain "Python数据分析"
+python pipeline-runner.py --domain "Python数据分析" --force    # 强制全量重跑
+python pipeline-runner.py --domain "Python数据分析" --dry-run  # 干跑预览
+```
 
 需求分析师将自动执行三阶段交互锁定学习范围与配置，确认后依次触发后续 Skill。
 
@@ -202,14 +223,23 @@ flowchart TD
 
 ## 🎛️ 高级扩展
 
-### 新增 Skill
-在 `plugins/knowledge-engine-orchestrator/schemas/pipeline.config.yml` 中插入步骤（指定 order 和 depends_on），然后在 `plugins/knowledge-engine-orchestrator/skill/` 下创建对应 `Skill.md`。遵循层1仅产出 JSON、层2负责 Markdown 的职责分离原则。
+### 新增 Agent
+在 `resources/schemas/pipeline.config.yml` 中插入步骤（指定 order 和 depends_on），然后在 `agents/` 下创建对应 Agent 定义文件。遵循层1仅产出 JSON、层2负责 Markdown 的职责分离原则。
 
 ### 新增文档类型
-在 `plugins/knowledge-engine-orchestrator/templates/` 下创建 `.template.md`，在 `plugins/knowledge-engine-orchestrator/schemas/pipeline.config.yml` 中追加 outputs_markdown，在 `plugins/knowledge-engine-orchestrator/skill/obsidian-doc-writer/Skill.md` 中增加渲染逻辑。
+在 `resources/templates/` 下创建 `.template.md`，在 `resources/schemas/pipeline.config.yml` 中追加 outputs_markdown，在 `agents/obsidian-doc-writer.md` 中增加渲染逻辑。
 
 ### 学科骨架定制
 在 `领域知识库/[领域名称]/.shared/subjects_syllabus.json` 中定义学科核心知识点骨架，知识分析师将以其为基准生成，确保多次运行核心知识点 ID 与名称稳定。
+
+---
+
+### 其他命令
+
+| 命令 | 功能 |
+|:---|:---|
+| `/knowledge-status [领域]` | 查看 Pipeline 缓存状态与进度 |
+| `/force-regenerate <领域> --confirm` | 强制全量重跑（忽略缓存） |
 
 ---
 

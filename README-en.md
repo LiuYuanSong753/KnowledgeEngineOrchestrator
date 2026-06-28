@@ -1,8 +1,8 @@
-# 🧠 Knowledge Engine Orchestrator v2.8
+# 🧠 Knowledge Engine Orchestrator v2.9
 
 **English** | [中文](./README.md)
 
-> **TL;DR**: Input a learning direction → Requirements Analyst triangulates scope via three-phase interaction → 6 Skills auto-chain by order → permanently linked Obsidian knowledge base. v2.8 brings comprehensive optimizations to three core Skills with enhanced data contracts, style customization, and automated quality checks.
+> **TL;DR**: Input a learning direction → Requirements Analyst triangulates scope via three-phase interaction → 6 Agents auto-chain by order → permanently linked Obsidian knowledge base. v2.9 achieves full Claude Code Plugin architecture with agents/, commands/, hooks/, .mcp.json, and Python pipeline runner.
 
 ---
 
@@ -16,7 +16,7 @@
 
 ### How we solve it
 
-| order | Skill | Output |
+| order | Agent | Output |
 |:---:|:---|:---|
 | 1 | **Requirements Analyst** | Three-phase interaction (scope → profile → config) → `requirements_profile.json` |
 | 2 | **Knowledge Analyst** | Systematic decomposition with subject abbreviation, cross-subject dependencies, style fields, input validation → `knowledge_graph.json` |
@@ -62,7 +62,7 @@ flowchart TD
     K -->|Syntax check| M[.shared/syntax_check_report.md]
 ```
 
-> **v2.8 Architecture**: Entry point is `plugins/knowledge-engine-orchestrator/skill/requirements-analyst` (Requirements Analyst). Three core Skills (Knowledge Analyst, Project Expert, Knowledge Educator) fully optimized with enhanced data structures, style-driven content generation, and automated quality gates.
+> **v2.9 Architecture**: Fully standardized Claude Code Plugin structure with `agents/`, `resources/`, `commands/`, `hooks/`, `.mcp.json`, and Python `pipeline-runner.py`.
 
 ---
 
@@ -70,54 +70,85 @@ flowchart TD
 
 ```text
 ./
-├── plugins/
-│   └── knowledge-engine-orchestrator/
-│       ├── skill/                            ← 6 independent Skills
-│       │   ├── requirements-analyst/Skill.md     ← [order:1] Requirements Analyst (entry)
-│       │   ├── knowledge-analyst/Skill.md        ← [order:2] Knowledge Analyst
-│       │   ├── project-expert/Skill.md           ← [order:3] Project Expert
-│       │   ├── knowledge-educator/Skill.md       ← [order:4] Knowledge Educator
-│       │   ├── verifier/Skill.md                 ← [order:5] Verifier
-│       │   └── obsidian-doc-writer/Skill.md      ← [order:6] Obsidian Doc Writer
-│       │
-│       ├── schemas/                          ← Rules: Pipeline config + JSON Schema
-│       │   ├── pipeline.config.yml               ← order sequence + rules
-│       │   ├── requirements_profile.schema.json
-│       │   ├── knowledge_graph.schema.json       ← v2.8
-│       │   ├── project_manifest.schema.json      ← v2.8
-│       │   ├── teaching_outline.schema.json      ← v2.8
-│       │   └── verification_result.schema.json
-│       │
-│       └── templates/                        ← 5 standardized document templates
-│           ├── knowledge-checklist.template.md
-│           ├── project-collection.template.md
-│           ├── teaching-guide.template.md
-│           ├── master-index.template.md
-│           └── progress-tracker.template.md
-│
-└── knowledge-bases/                      ← Output: user-facing knowledge assets
-    └── [domain-name]/
-        ├── .shared/                      ← Per-domain JSON middleware (isolated)
-        ├── 0-Master-Index.md
-        ├── 1-Domain-Knowledge-Glossary.md
-        ├── 2-Project-Set.md
-        ├── 3-Domain-Teaching-Guide.md
-        └── 4-Progress-Tracker.md
+├── .claude-plugin/
+│   ├── plugin.json                          ← Plugin runtime manifest (required)
+│   └── marketplace.json                     ← Marketplace discovery descriptor
+├── Skill.md                                 ← Plugin root entry point
+├── agents/                                  ← 6 independent Agent definitions
+│   ├── requirements-analyst.md                  ← [order:1] Requirements Analyst (entry)
+│   ├── knowledge-analyst.md                     ← [order:2] Knowledge Analyst
+│   ├── project-expert.md                        ← [order:3] Project Expert
+│   ├── knowledge-educator.md                    ← [order:4] Knowledge Educator
+│   ├── verifier.md                              ← [order:5] Verifier
+│   └── obsidian-doc-writer.md                   ← [order:6] Obsidian Doc Writer
+├── skills/                                  ← Reusable skill modules
+│   └── schema-validator.md
+├── resources/                               ← Shared resources
+│   ├── schemas/                                 ← Pipeline config + JSON Schema
+│   │   ├── pipeline.config.yml
+│   │   ├── requirements_profile.schema.json
+│   │   ├── knowledge_graph.schema.json
+│   │   ├── project_manifest.schema.json
+│   │   ├── teaching_outline.schema.json
+│   │   └── verification_result.schema.json
+│   └── templates/                               ← 5 standardized document templates
+│       ├── knowledge-checklist.template.md
+│       ├── project-collection.template.md
+│       ├── teaching-guide.template.md
+│       ├── master-index.template.md
+│       └── progress-tracker.template.md
+├── commands/                                ← Slash command definitions
+│   ├── analyze-knowledge.md                     ← /analyze-knowledge trigger Pipeline
+│   ├── knowledge-status.md                      ← /knowledge-status view cache
+│   └── force-regenerate.md                      ← /force-regenerate force rerun
+├── hooks/
+│   └── hooks.json                           ← Event trigger configuration
+├── .mcp.json                                ← MCP service definition
+├── pipeline-runner.py                       ← Python Pipeline orchestrator
+├── README.md
+├── README-en.md
+└── CHANGELOG.md
+
+knowledge-bases/                          ← Output: user-facing knowledge assets
+└── [domain-name]/
+    ├── .shared/                          ← Per-domain JSON middleware (isolated)
+    ├── 0-Master-Index.md
+    ├── 1-Domain-Knowledge-Glossary.md
+    ├── 2-Project-Set.md
+    ├── 3-Domain-Teaching-Guide.md
+    └── 4-Progress-Tracker.md
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Trigger
+### Environment Setup
 
-> **"Use the Requirements Analyst to analyze 'Prompt Engineering'."**
+- Install the plugin into your Claude Code plugin directory.
+- Install dependencies (optional but recommended): `pip install pyyaml` for Python pipeline runner.
+- Recommended: **Obsidian** for best bidirectional link experience.
 
-The Requirements Analyst will run three-phase interaction, then auto-chain subsequent Skills by order.
+### Trigger via Natural Language
+
+> "Use the Requirements Analyst to analyze 'Prompt Engineering'."
+
+### Trigger via Slash Command (Recommended)
+
+```
+/analyze-knowledge "Prompt Engineering"
+/analyze-knowledge "Python Data Analysis" --granularity=G3 --depth=D2 --style=面试突击型
+```
+
+### Trigger via Python Pipeline Runner
+
+```bash
+python pipeline-runner.py --domain "Python数据分析"
+python pipeline-runner.py --domain "Python数据分析" --force
+python pipeline-runner.py --domain "Python数据分析" --dry-run
+```
 
 ### With Parameters
-
-> **"Analyze 'Python Data Analysis', granularity=G3, depth=D2, style=面试突击型, max_points=20."**
 
 | Parameter | Options | Default |
 |:---|:---|:---|
@@ -126,27 +157,22 @@ The Requirements Analyst will run three-phase interaction, then auto-chain subse
 | `max_points` | 5~200 | `20` |
 | `style` | 标准系统型 / 面试突击型 / 项目驱动型 / 学术严谨型 / 科普故事型 | `标准系统型` |
 
----
+### Other Commands
 
-## 📄 Deliverables
-
-| File | Content |
-| :--- | :--- |
-| **0-Master-Index.md** | Verification report + Mermaid graph + mapping table + reference index + learning path |
-| **1-Domain-Knowledge-Glossary.md** | Structured table: ID, name, difficulty, subject, prerequisites, exam weight/scenario tags |
-| **2-Project-Set.md** | Context-driven projects with quantified acceptance criteria, estimated hours, and goal matching |
-| **3-Domain-Teaching-Guide.md** | Unit-based teaching with estimated minutes, cross-subject combined units, and orphan handling |
-| **4-Progress-Tracker.md** | Checkbox tracker per knowledge point ID |
+| Command | Function |
+|:---|:---|
+| `/knowledge-status [domain]` | View Pipeline cache status and progress |
+| `/force-regenerate <domain> --confirm` | Force full rerun (ignore cache) |
 
 ---
 
 ## 🔄 Checkpoint Resume
 
-- **Auto-skip**: If JSON cache exists and upstream hash unchanged, Skill asks to reuse
-- **Force re-run**: Type "force full re-run"
-- **Partial update**: Re-run only the changed Skill + order:6
+- **Auto-skip**: If JSON cache exists and upstream hash unchanged, agent asks to reuse
+- **Force re-run**: Use `python pipeline-runner.py --force` or `/force-regenerate --confirm`
+- **Partial update**: Re-run only the changed agent + order:6
 
-Each Skill independently reports:
+Each agent independently reports:
 
 ```
 ✅ [2/6] Knowledge Analyst Done
@@ -155,28 +181,14 @@ Each Skill independently reports:
    Granularity: G3 / Depth: D2 / Style: 面试突击型
    ──────────────────────────
    Next: Project Expert (order: 3)
-   Depends on: knowledge-bases/{domain}/.shared/knowledge_graph.json
 ```
-
----
-
-## 🎛️ Extension
-
-### Add a Skill
-Insert a step in `plugins/knowledge-engine-orchestrator/schemas/pipeline.config.yml` with `order` and `depends_on`, then create `plugins/knowledge-engine-orchestrator/skill/your-agent/Skill.md`. Layer-1 Skills output JSON only; Layer-2 handles Markdown.
-
-### Add a Doc Type
-Create `.template.md` in `plugins/knowledge-engine-orchestrator/templates/`, append `outputs_markdown` in pipeline config, add rendering logic in obsidian-doc-writer.
-
-### Custom Subject Syllabus
-Place `subjects_syllabus.json` under `.shared/` — the Knowledge Analyst will use it as the skeleton for stable, reproducible knowledge decomposition.
 
 ---
 
 ## ⚠️ Important
 
 - **AI-Generated**: Review outputs for accuracy.
-- **ID Immutability**: Once generated, knowledge point IDs (e.g., `PYB-001`) must never change. Format: `{SubjectAbbreviation}-{NNN}`.
+- **ID Immutability**: Once generated, knowledge point IDs (e.g., `PYB-001`) must never change.
 - **Read-Only Cache**: `.shared/` JSON files are auto-maintained — do not edit manually.
 
 ---
